@@ -1,6 +1,7 @@
 # SDK
 
 * SDK 目录说明
+```sh
     sdk
      |- components
         |- crc16
@@ -46,7 +47,7 @@
         |- preBuild.py
      |- .gitignore
      |- readme.md
-
+```
 
 
 
