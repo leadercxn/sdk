@@ -6,7 +6,7 @@ jsonfile.close()
 
 version = build_info['version']
 
-Cfile = open('src/version.h','r')
+Cfile = open('bsp/version.h','r')
 content = Cfile.read()
 Cfile.close()
 if content.find(version.strip('v')) > 0:
@@ -40,7 +40,7 @@ content = """#ifndef VERSION_H
     fw_version_str = fw_vrsion_str
     )
 
-version_file = open('src/version.h','wb+')
+version_file = open('bsp/version.h','wb+')
 version_file.write(content)
 version_file.close()
 
