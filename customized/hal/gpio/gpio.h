@@ -9,6 +9,11 @@ typedef enum
     GPIO_DIR_INPUT,
 } gpio_dir_e;
 
+typedef enum
+{
+    GPIO_TYPE_IO,
+    GPIO_TYPE_AF,
+} gpio_type_e;
 
 typedef struct
 {

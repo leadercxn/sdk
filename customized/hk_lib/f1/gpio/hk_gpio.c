@@ -255,13 +255,20 @@ int hk_gpio_obj_init(gpio_cfg_t *p_cfg)
 {
     if(p_cfg)
     {
-        if(p_cfg->gpio_dir == GPIO_DIR_OUTPUR)
+        if (p_cfg->flag == GPIO_TYPE_IO)
         {
-            conf_gpio_output(p_cfg->gpio_clk, (GPIO_TypeDef *)p_cfg->p_port, p_cfg->gpio_pin);
+            if(p_cfg->gpio_dir == GPIO_DIR_OUTPUR)
+            {
+                conf_gpio_output(p_cfg->gpio_clk, (GPIO_TypeDef *)p_cfg->p_port, p_cfg->gpio_pin);
+            }
+            else
+            {
+                conf_gpio_input(p_cfg->gpio_clk, (GPIO_TypeDef *)p_cfg->p_port, p_cfg->gpio_pin);
+            }
         }
         else
         {
-            conf_gpio_input(p_cfg->gpio_clk, (GPIO_TypeDef *)p_cfg->p_port, p_cfg->gpio_pin);
+            conf_gpio_af(p_cfg->gpio_clk, (GPIO_TypeDef *)p_cfg->p_port, p_cfg->gpio_pin);
         }
     }
 
