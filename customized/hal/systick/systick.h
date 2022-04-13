@@ -7,6 +7,7 @@ typedef struct
 {
     uint32_t    clk_div;
     uint32_t    us_ticks;
+    uint32_t    ticks_per_sec;
     void        *p_systick;
 } systick_cfg_t;
 
@@ -15,6 +16,9 @@ typedef struct
     void (* systick_init)      (systick_cfg_t *p_cfg);
     void (* systick_clk_div_set)   (systick_cfg_t *p_cfg, uint32_t clk_div);
     void (* systick_us_ticks_set)  (systick_cfg_t *p_cfg, uint32_t us_ticks);
+    void (* delay_us)   (systick_cfg_t *p_cfg, uint32_t us);
+    void (* delay_ms)   (systick_cfg_t *p_cfg, uint32_t ms);
+    uint32_t (* systick_get)    (systick_cfg_t *p_cfg);
 } systick_ops_t;
 
 
