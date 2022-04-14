@@ -56,4 +56,7 @@ int  hk_uart_obj_init(usart_cfg_t *p_uart_cfg);
 void hk_uart_obj_put(char ch);
 void hk_uart_obj_get(char *ch); 
 
+void hk_uart_obj_puts(char *ch, unsigned char len);
+void hk_uart_obj_gets(char *ch, unsigned char len);
+
 #endif

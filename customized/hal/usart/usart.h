@@ -19,6 +19,8 @@ typedef struct
 #elif defined(__GNUC__)                         //gcc
     void    (* usart_write) (char ch);
     void    (* usart_read)  (char *ch);
+    void    (* usart_write_buffer)  (char *ch, unsigned char len);
+    void    (* usart_read_buffer)  (char *ch, unsigned char len);
 #endif
 } usart_ops_t;
 

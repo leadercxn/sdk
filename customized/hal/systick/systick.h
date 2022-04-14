@@ -18,7 +18,7 @@ typedef struct
     void (* systick_us_ticks_set)  (systick_cfg_t *p_cfg, uint32_t us_ticks);
     void (* delay_us)   (systick_cfg_t *p_cfg, uint32_t us);
     void (* delay_ms)   (systick_cfg_t *p_cfg, uint32_t ms);
-    uint32_t (* systick_get)    (systick_cfg_t *p_cfg);
+    uint32_t (* systick_get)    (void);
 } systick_ops_t;
 
 
@@ -28,6 +28,6 @@ typedef struct
     systick_ops_t systick_ops;
 } systick_object_t;
 
-
+extern systick_object_t g_systick_obj;
 
 #endif

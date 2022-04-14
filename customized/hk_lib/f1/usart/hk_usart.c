@@ -95,3 +95,23 @@ void hk_uart_obj_get(char *ch)
 {
     *ch = hk_uart_get(*(hk_uart_info_t *)g_usart_object.usart_cfg.p_pin_cfg);
 }
+
+void hk_uart_obj_puts(char *ch, unsigned char len)
+{
+    uint8_t i = 0;
+    
+    for (i = 0; i < len; i++)
+    {
+        hk_uart_obj_put(ch[i]);
+    }
+}
+
+void hk_uart_obj_gets(char *ch, unsigned char len)
+{
+    uint8_t i = 0;
+    
+    for (i = 0; i < len; i++)
+    {
+        hk_uart_obj_get(&ch[i]);
+    }
+}

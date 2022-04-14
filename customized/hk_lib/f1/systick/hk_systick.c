@@ -82,9 +82,9 @@ void SysTick_Handler(void)
 	m_sys_tick++;
 }
 
-uint32_t hk_systick_get(systick_cfg_t *p_sys_config)
+uint32_t hk_systick_get(void)
 {
-	return *(uint32_t *)p_sys_config->p_systick;
+	return m_sys_tick;
 }
 
 void hk_systick_obj_init(systick_cfg_t *p_sys_config)
