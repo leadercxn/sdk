@@ -1,0 +1,11 @@
+usb
+device = STM32F030R8
+if SWD
+speed 4000
+h
+erase
+loadfile FT32F0XX.hex,0x8000000
+r
+g
+sleep 100
+exit
