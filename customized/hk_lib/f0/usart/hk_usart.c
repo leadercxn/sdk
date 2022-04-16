@@ -59,6 +59,23 @@ void hk_uart_put(hk_uart_info_t uart_info, char ch)
     }
 }
 
+char hk_uart_get(hk_uart_info_t uart_info)
+{
+    char data;
+
+    /* Loop until receive data register is not empty */
+    while (USART_GetFlagStatus(uart_info.uart, USART_FLAG_RXNE) == RESET)
+    {
+    }
+
+    /* Place your implementation of fgetc here */
+    /* e.g. write a character to the USART */
+    data = (char)USART_ReceiveData(uart_info.uart);
+    return data;
+}
+
+
+
 int hk_uart_obj_init(usart_cfg_t *p_uart_cfg)
 {
     hk_uart_info_t *p_hk_uart_info = (hk_uart_info_t *)p_uart_cfg->p_pin_cfg;
@@ -72,4 +89,29 @@ int hk_uart_obj_init(usart_cfg_t *p_uart_cfg)
 void hk_uart_obj_put(char ch)
 {
     hk_uart_put(*(hk_uart_info_t *)g_usart_object.usart_cfg.p_pin_cfg, ch);
+}
+
+void hk_uart_obj_get(char *ch)
+{
+    *ch = hk_uart_get(*(hk_uart_info_t *)g_usart_object.usart_cfg.p_pin_cfg);
+}
+
+void hk_uart_obj_puts(char *ch, unsigned char len)
+{
+    uint8_t i = 0;
+    
+    for (i = 0; i < len; i++)
+    {
+        hk_uart_obj_put(ch[i]);
+    }
+}
+
+void hk_uart_obj_gets(char *ch, unsigned char len)
+{
+    uint8_t i = 0;
+    
+    for (i = 0; i < len; i++)
+    {
+        hk_uart_obj_get(&ch[i]);
+    }
 }

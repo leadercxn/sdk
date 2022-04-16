@@ -44,8 +44,13 @@ typedef struct
 
 void hk_uart_init(hk_uart_info_t uart_info, hk_uart_config_t const *p_config);
 void hk_uart_put(hk_uart_info_t uart_info, char ch);
+char hk_uart_get(hk_uart_info_t uart_info);
 
 int  hk_uart_obj_init(usart_cfg_t *p_uart_cfg);
 void hk_uart_obj_put(char ch);
+void hk_uart_obj_get(char *ch); 
+
+void hk_uart_obj_puts(char *ch, unsigned char len);
+void hk_uart_obj_gets(char *ch, unsigned char len);
 
 #endif
