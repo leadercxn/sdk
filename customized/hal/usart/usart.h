@@ -21,6 +21,7 @@ typedef struct
     void    (* usart_read)  (char *ch);
     void    (* usart_write_buffer)  (char *ch, unsigned char len);
     void    (* usart_read_buffer)  (char *ch, unsigned char len);
+    void    (* usart_put_string)   (const char *ch);                              // 专用ntshell输出string的接口
 #endif
 } usart_ops_t;
 
