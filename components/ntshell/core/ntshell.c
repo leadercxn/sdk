@@ -634,6 +634,21 @@ void ntshell_execute(ntshell_t *p)
     }
 }
 
+void ntshell_execute_async(ntshell_t *p)
+{
+    if(p->initcode == INITCODE)
+    {
+        unsigned char ch;
+        int readbyte;
+
+        readbyte = SERIAL_READ(p, (char *)&ch, sizeof(ch));
+        if(readbyte == sizeof(ch))
+        {
+            vtrecv_execute(&(p->vtrecv), &ch, sizeof(ch));
+        }
+    }
+}
+
 /**
  * @brief Set up the prompt of the NT-Shell.
  *

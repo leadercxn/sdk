@@ -49,18 +49,29 @@ void hk_uart_init(hk_uart_info_t uart_info, hk_uart_config_t const *p_config)
     USART_Cmd(uart_info.uart, ENABLE);
 }
 
-void hk_uart_put(hk_uart_info_t uart_info, char ch)
+void hk_uart_put(hk_uart_info_t uart_info, uint8_t tx_data)
 {
-    USART_SendData(uart_info.uart, (uint8_t)ch);
+    USART_SendData(uart_info.uart, tx_data);
 
     /* Loop until transmit data register is empty */
-    while (USART_GetFlagStatus(uart_info.uart, USART_FLAG_TXE) == RESET)
+//  while (USART_GetFlagStatus(uart_info.uart, USART_FLAG_TXE) == RESET)  //也可以
+    while (USART_GetFlagStatus(uart_info.uart, USART_FLAG_TC) == RESET)
     {
     }
 }
 
-char hk_uart_get(hk_uart_info_t uart_info)
+/**
+ * @brief 获取uart的rx数据
+ * 
+ * @return 返回数据长度, 0 无数据
+ *                     1 读到数据
+ */
+uint8_t hk_uart_get(hk_uart_info_t uart_info, uint8_t *p_rx_data)
 {
+/**
+ * 弃用，不要阻塞式等待获取参数
+ */
+#if 0
     char data;
 
     /* Loop until receive data register is not empty */
@@ -72,6 +83,19 @@ char hk_uart_get(hk_uart_info_t uart_info)
     /* e.g. write a character to the USART */
     data = (char)USART_ReceiveData(uart_info.uart);
     return data;
+#endif
+
+    /**
+     * 获得rx参数
+     */
+    if(USART_GetFlagStatus(uart_info.uart, USART_FLAG_RXNE) == SET)
+    {
+        *p_rx_data = (uint8_t)USART_ReceiveData(uart_info.uart);
+         
+        return 1;
+    }
+
+    return 0;
 }
 
 
@@ -86,17 +110,17 @@ int hk_uart_obj_init(usart_cfg_t *p_uart_cfg)
     return 0;
 }
 
-void hk_uart_obj_put(char ch)
+void hk_uart_obj_put(uint8_t ch)
 {
     hk_uart_put(*(hk_uart_info_t *)g_usart_object.usart_cfg.p_pin_cfg, ch);
 }
 
-void hk_uart_obj_get(char *ch)
+uint8_t hk_uart_obj_get(uint8_t *ch)
 {
-    *ch = hk_uart_get(*(hk_uart_info_t *)g_usart_object.usart_cfg.p_pin_cfg);
+    return hk_uart_get(*(hk_uart_info_t *)g_usart_object.usart_cfg.p_pin_cfg, ch);
 }
 
-void hk_uart_obj_puts(char *ch, unsigned char len)
+void hk_uart_obj_puts(uint8_t *ch, uint16_t len)
 {
     uint8_t i = 0;
     
@@ -106,12 +130,29 @@ void hk_uart_obj_puts(char *ch, unsigned char len)
     }
 }
 
-void hk_uart_obj_gets(char *ch, unsigned char len)
+/**
+ * @return 返回实际读取到的长度
+ */
+uint16_t hk_uart_obj_gets(uint8_t *ch, uint16_t len)
 {
-    uint8_t i = 0;
+    uint16_t i = 0;
+    uint16_t rx_len = 0;
     
     for (i = 0; i < len; i++)
     {
-        hk_uart_obj_get(&ch[i]);
+        if(hk_uart_obj_get(&ch[i]))
+        {
+            rx_len ++;
+        }
+    }
+
+    return rx_len;
+}
+
+void hk_uart_obj_putstring(const char *s)
+{
+    while (*s != '\0')
+    {
+        hk_uart_obj_put(*s++);
     }
 }
