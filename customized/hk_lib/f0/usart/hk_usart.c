@@ -72,7 +72,6 @@ uint8_t hk_uart_get(hk_uart_info_t uart_info, uint8_t *p_rx_data)
  * 弃用，不要阻塞式等待获取参数
  */
 #if 0
-    char data;
 
     /* Loop until receive data register is not empty */
     while (USART_GetFlagStatus(uart_info.uart, USART_FLAG_RXNE) == RESET)
@@ -81,10 +80,12 @@ uint8_t hk_uart_get(hk_uart_info_t uart_info, uint8_t *p_rx_data)
 
     /* Place your implementation of fgetc here */
     /* e.g. write a character to the USART */
-    data = (char)USART_ReceiveData(uart_info.uart);
-    return data;
+    *p_rx_data = (uint8_t)USART_ReceiveData(uart_info.uart);
+
+    return 1;
 #endif
 
+#if 1
     /**
      * 获得rx参数
      */
@@ -96,6 +97,7 @@ uint8_t hk_uart_get(hk_uart_info_t uart_info, uint8_t *p_rx_data)
     }
 
     return 0;
+#endif
 }
 
 
@@ -122,7 +124,7 @@ uint8_t hk_uart_obj_get(uint8_t *ch)
 
 void hk_uart_obj_puts(uint8_t *ch, uint16_t len)
 {
-    uint8_t i = 0;
+    uint16_t i = 0;
     
     for (i = 0; i < len; i++)
     {
@@ -140,7 +142,7 @@ uint16_t hk_uart_obj_gets(uint8_t *ch, uint16_t len)
     
     for (i = 0; i < len; i++)
     {
-        if(hk_uart_obj_get(&ch[i]))
+        if(hk_uart_obj_get(&ch[rx_len]))
         {
             rx_len ++;
         }
