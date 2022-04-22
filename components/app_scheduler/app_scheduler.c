@@ -14,7 +14,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "board_config.h"
+#include "boards.h"
+#include "lib_error.h"
 #include "app_scheduler.h"
 
 

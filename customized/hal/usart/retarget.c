@@ -48,7 +48,7 @@ int _write(int file, const char *p_char, int len)
   }
 #endif
 
-  if((&g_usart_object) && (g_usart_object.usart_ops.usart_write))
+  if(g_usart_object.usart_ops.usart_write)
   {
     for (i = 0; i < len; i++)
     {

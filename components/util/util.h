@@ -13,6 +13,8 @@ extern "C"
 #include "stdbool.h"
 #include <stdint.h>
 
+#include "lib_error.h"
+
 /** The upper 8 bits of a 32 bit value */
 //lint -emacro(572,MSB) // Suppress warning 572 "Excessive shift value"
 #define MSB_32(a) (((a) & 0xFF000000) >> 24)
@@ -183,7 +185,7 @@ extern "C"
 #define IS_NULL(p_data)                 \
     if(!p_data)                         \
     {                                   \
-        return -EINVAL;                 \
+        return -ENULL;                 \
     }                                   \
 
 

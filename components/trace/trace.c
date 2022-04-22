@@ -11,7 +11,7 @@
  */
 void trace_init(void)
 {
-    if((&g_usart_object) && (g_usart_object.usart_ops.usart_init))
+    if(g_usart_object.usart_ops.usart_init)
     {
         g_usart_object.usart_ops.usart_init(&g_usart_object.usart_cfg);
     }

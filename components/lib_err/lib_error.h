@@ -38,5 +38,7 @@
 #define ERANGE      34  /* Math result not representable */
 #define ESTATE      35  /* error state */
 
+
+#define ENULL       100 /* NULL Point */
 #endif
 
