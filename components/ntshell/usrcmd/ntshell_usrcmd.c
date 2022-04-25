@@ -35,6 +35,7 @@
  */
 
 #include "ntshell_usrcmd.h"
+#include "stdio.h"
 
 #include "ntlibc.h"
 #include "ntopt.h"

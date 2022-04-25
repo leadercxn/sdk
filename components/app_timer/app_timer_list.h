@@ -27,6 +27,11 @@ typedef struct
 
 typedef timer_node_t *  timer_node_id_t;
 
+int timer_init(timer_object_t *p_timer_obj);
+int timer_create( timer_node_id_t const *p_timer_id, bool single_mode, bool immediately, timer_node_handler_t timeout_handler);
+int timer_start(timer_node_id_t timer_id, uint32_t ms, void *p_data);
+int timer_stop(timer_node_id_t timer_id);
+void timer_loop_task(void);
 
 #endif
 

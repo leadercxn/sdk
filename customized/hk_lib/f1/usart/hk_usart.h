@@ -4,6 +4,8 @@
 #include "stdbool.h"
 #include "usart.h"
 
+#include "stm32f10x.h"
+
 typedef enum 
 {
     HK_UART_1 = 0, ///< UART 1.
@@ -49,16 +51,16 @@ typedef struct
 } hk_uart_config_t;
 
 void hk_uart_init(hk_uart_info_t uart_info, hk_uart_config_t const *p_config);
-void hk_uart_put(hk_uart_info_t uart_info, char ch);
-char hk_uart_get(hk_uart_info_t uart_info);
+void hk_uart_put(hk_uart_info_t uart_info, uint8_t tx_data);
+uint8_t hk_uart_get(hk_uart_info_t uart_info, uint8_t *p_rx_data);
 
 int  hk_uart_obj_init(usart_cfg_t *p_uart_cfg);
-void hk_uart_obj_put(char ch);
-void hk_uart_obj_get(char *ch); 
+void hk_uart_obj_put(uint8_t ch);
+uint8_t hk_uart_obj_get(uint8_t *ch);
 
 void hk_uart_obj_putstring(const char *s);
 
-void hk_uart_obj_puts(char *ch, unsigned char len);
-void hk_uart_obj_gets(char *ch, unsigned char len);
+void hk_uart_obj_puts(uint8_t *ch, uint16_t len);
+uint16_t hk_uart_obj_gets(uint8_t *ch, uint16_t len);
 
 #endif

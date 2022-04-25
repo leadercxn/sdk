@@ -37,7 +37,6 @@
 #ifndef NTSHELL_USRCMD_H
 #define NTSHELL_USRCMD_H
 
-#define NULL 0
 
 typedef int (* ntshell_call_func)(int argc, char **argv);
 
