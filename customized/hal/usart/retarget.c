@@ -39,14 +39,6 @@ int fputc(int ch, FILE *p_file)
 int _write(int file, const char *p_char, int len)
 {
   int i;
-//  UNUSED_PARAMETER(file);
-
-#if 0
-  for (i = 0; i < len; i++)
-  {
-    UNUSED_VARIABLE(uart_put(*p_char++));
-  }
-#endif
 
   if(g_usart_object.usart_ops.usart_write)
   {

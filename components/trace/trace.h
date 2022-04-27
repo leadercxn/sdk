@@ -13,6 +13,11 @@
 //#ifndef TARCE_ENABLE
 //#define TRACE_ENABLE
 //#endif
+//windows:
+//#define FILENAME(x) strrchr(x,'/')?strrchr(x,'/')+1:x
+//linux:
+//#define FILENAME(x) strrchr(x,'\\')?strrchr(x,'\\')+1:x
+#define FILENAME(x) strrchr(x,'/')?strrchr(x,'/')+1:x
 
 #ifdef TRACE_ENABLE
 
@@ -29,7 +34,7 @@
 #endif // TRACE_LEVEL
 
 #ifndef __MODULE__
-#define __MODULE__ __FILE__
+#define __MODULE__ FILENAME(__FILE__)
 #endif // __MODULE__
 
 #ifndef TRACE_ASSERT_FORMAT

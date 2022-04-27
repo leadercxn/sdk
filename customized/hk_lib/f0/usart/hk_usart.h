@@ -3,6 +3,7 @@
 
 #include "stdbool.h"
 #include "usart.h"
+#include "hk32f0xx.h"
 
 typedef struct
 {
