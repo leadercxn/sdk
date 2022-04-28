@@ -9,11 +9,13 @@ typedef struct
 {
     uint32_t     exit_clk;
 
-    GPIO_TypeDef *exit_port;
+    GPIO_TypeDef *exit_pin_port;
     uint32_t     exit_pin_clk;
 
     uint16_t     exit_pin;
-    uint16_t     exit_pin_source;
+
+    uint8_t     exit_pin_port_source;
+    uint8_t     exit_pin_source;
 } hk_exit_pin_cfg;
 
 typedef struct

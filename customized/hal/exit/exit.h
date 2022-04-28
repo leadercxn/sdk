@@ -1,6 +1,8 @@
 #ifndef __EXIT_H
 #define __EXIT_H
 
+#include "stdint.h"
+
 typedef struct
 {
     void *p_pin_cfg;
