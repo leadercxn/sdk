@@ -10,9 +10,9 @@ typedef struct
     uint32_t     exit_clk;
 
     GPIO_TypeDef *exit_pin_port;
-    uint32_t     exit_pin_clk;
+    uint32_t     exit_pin_port_clk;
 
-    uint16_t     exit_pin;
+    uint32_t     exit_pin;
 
     uint8_t     exit_pin_port_source;
     uint8_t     exit_pin_source;
