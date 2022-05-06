@@ -32,7 +32,7 @@ void hk_systick_init(systick_cfg_t *p_cfg)
 	systick_start();
 }
 
-void hk_delay_us(systick_cfg_t *p_cfg, uint32_t us)
+void hk_delay_us(uint32_t us)
 {
 	//	volatile uint32_t temp;
 	SysTick->LOAD = (uint32_t)fac_us;
@@ -52,7 +52,7 @@ void hk_delay_us(systick_cfg_t *p_cfg, uint32_t us)
 /**
  * @brief 当ms过大，导致溢出，是个BUG
  */
-void hk_delay_ms(systick_cfg_t *p_cfg, uint32_t ms)
+void hk_delay_ms(uint32_t ms)
 {
 	uint32_t i = 0;
 	for(i = 0; i < ms; i++)
