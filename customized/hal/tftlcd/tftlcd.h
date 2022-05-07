@@ -29,6 +29,36 @@
 
 typedef struct 
 {
+    uint16_t x;
+    uint16_t y;
+} coord_t;
+
+typedef struct 
+{
+    coord_t coord;
+    uint16_t color;
+} point_object_t;
+
+typedef struct chars
+{
+    uint8_t         num;        // 待显字符
+    uint8_t         size;       // 字体大小
+    uint8_t         mode;       // 是否叠加显示
+    coord_t         coord;      // 字符坐标
+}chars_info_t;
+
+
+typedef struct 
+{
+    coord_t coord_s;
+    coord_t coord_e;
+    uint16_t color;
+} graphic_object_t;
+
+typedef graphic_object_t fill_object_t;
+
+typedef struct 
+{
     uint16_t setxcmd;
     uint16_t setycmd;
     uint16_t wramcmd;
@@ -36,7 +66,8 @@ typedef struct
     uint16_t height;
     uint16_t id;
     uint16_t dir;
-    uint16_t color;             
+    uint16_t background_color;  
+    uint16_t point_color;           
 } tftlcd_info_t;
 
 
@@ -47,33 +78,8 @@ typedef struct
 } tftlcd_driver_t;
 
 
-typedef struct
+typedef struct tftlcd_cfg
 {
-    // lcd驱动信息
-    tftlcd_driver_t *p_dri;
-
-    // 对应lcd驱动的操作
-    int (*hardware_init)    (tftlcd_driver_t *p_driver);
-    int (*send_byte)        (tftlcd_driver_t *p_driver, uint16_t data);
-    int (*send_cmd)         (tftlcd_driver_t *p_driver, uint16_t cmd);
-    int (*send_data)        (tftlcd_driver_t *p_driver, uint16_t data);
-    int (*read_data)        (tftlcd_driver_t *p_driver, uint16_t *data);
-
-} tftlcd_private_cfg_t;
-
-
-typedef struct 
-{
-    // tftlcd_private_cfg_t *p_pri_cfg;
-
-    // int (*init)             (tftlcd_private_cfg_t *p_pri_cfg);
-    // int (*set_cursor)       (tftlcd_private_cfg_t *p_pri_cfg, uint16_t xpos, uint16_t ypos);
-    // int (*write_ram_pre)    (tftlcd_private_cfg_t *p_pri_cfg);
-    // int (*write_ram)        (tftlcd_private_cfg_t *p_pri_cfg);
-    // int (*set_scan_dir)     (tftlcd_private_cfg_t *p_pri_cfg);
-    // int (*clear_screen)     (tftlcd_private_cfg_t *p_pri_cfg);
-    // int (*fill_area)        (tftlcd_private_cfg_t *p_pri_cfg);
-
     // lcd驱动信息
     tftlcd_driver_t *p_dri;
 
@@ -82,8 +88,9 @@ typedef struct
     int (*send_byte)        (tftlcd_driver_t *p_driver, uint16_t data);
     int (*write_cmd)        (tftlcd_driver_t *p_driver, uint16_t cmd);
     int (*write_data)       (tftlcd_driver_t *p_driver, uint16_t data);
+    int (*write_burst_data) (tftlcd_driver_t *p_driver, unsigned char *buf, uint16_t cnt);
     int (*read_data)        (tftlcd_driver_t *p_driver, uint16_t *data);
-    int (*delay_ms)         (uint32_t ms);
+    void (*delay_ms)         (uint32_t ms);
 
 } tftlcd_cfg_t;
 
@@ -91,16 +98,17 @@ typedef struct
 typedef struct tftlcd_ops
 {
     // private function
-    int (*init)             (tftlcd_cfg_t *p_cfg);
+    int (*init)             (tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops);
     int (*set_cursor)       (tftlcd_cfg_t *p_cfg, uint16_t xpos, uint16_t ypos);
     int (*write_ram_pre)    (tftlcd_cfg_t *p_cfg);
     int (*write_ram)        (tftlcd_cfg_t *p_cfg, uint16_t color);
     int (*set_scan_dir)     (tftlcd_cfg_t *p_cfg, uint16_t dir);
-    int (*clear_screen)     (tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops);
-    int (*fill_area)        (tftlcd_cfg_t *p_cfg);
+
     // common function
-    int (*draw_point)       (tftlcd_cfg_t *p_cfg);
-    int (*show_char)        (tftlcd_cfg_t *p_cfg);
+    int (*clear_screen)     (tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops);
+    int (*fill_area)        (tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops, fill_object_t area);
+    int (*draw_point)       (tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops, point_object_t point);
+    int (*show_char)        (tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops, chars_info_t ch);
     int (*show_string)      (tftlcd_cfg_t *p_cfg);
     int (*show_num)         (tftlcd_cfg_t *p_cfg);
     int (*draw_line)        (tftlcd_cfg_t *p_cfg);
@@ -119,5 +127,11 @@ typedef struct
     tftlcd_ops_t tftlcd_ops;
 } tftlcd_object_t;
 
+
+// common function declare
+int tftlcd_clear_screen(tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops);
+int tftlcd_fill_area(tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops, fill_object_t area);
+int tftlcd_draw_point(tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops, point_object_t point);
+int tftlcd_show_char(tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops, chars_info_t ch);
 
 #endif
