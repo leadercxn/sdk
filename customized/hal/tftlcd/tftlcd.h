@@ -89,9 +89,10 @@ typedef struct tftlcd_cfg
     int (*write_cmd)        (tftlcd_driver_t *p_driver, uint16_t cmd);
     int (*write_data)       (tftlcd_driver_t *p_driver, uint16_t data);
     int (*write_burst_data) (tftlcd_driver_t *p_driver, unsigned char *buf, uint16_t cnt);
-    int (*read_data)        (tftlcd_driver_t *p_driver, uint16_t *data);
+    int (*read_data)        (tftlcd_driver_t *p_driver);
+    int (*write_reg)        (tftlcd_driver_t *p_driver, uint16_t cmd, uint16_t data);
     void (*delay_ms)         (uint32_t ms);
-
+    void (*delay_us)         (uint32_t us);
 } tftlcd_cfg_t;
 
 
@@ -103,6 +104,7 @@ typedef struct tftlcd_ops
     int (*write_ram_pre)    (tftlcd_cfg_t *p_cfg);
     int (*write_ram)        (tftlcd_cfg_t *p_cfg, uint16_t color);
     int (*set_scan_dir)     (tftlcd_cfg_t *p_cfg, uint16_t dir);
+    int (*read_reg)         (tftlcd_cfg_t *p_cfg, uint16_t cmd);
 
     // common function
     int (*clear_screen)     (tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops);
