@@ -6,6 +6,8 @@
 #include "util.h"
 #include "hk_timer.h"
 
+#include "lv_hal_tick.h"
+
 /**
  * @brief 
  * 
@@ -18,7 +20,7 @@ int hk_timer3_init(timer_cfg_t *p_timer_cfg)
 
     static uint16_t prescaler_value = 0;
 
-    /* 产生1M的时钟 */
+    /* 产生1ms的时钟 */
     prescaler_value = (SystemCoreClock / p_timer_cfg->prescaler_freq) - 1;
 
     TIM_TimeBaseInitTypeDef     TIM_TimeBaseStructure;
@@ -87,6 +89,9 @@ void TIM3_IRQHandler(void)
 
         /* ticks +1 */
         g_timer3_object.timer_cfg.ticks++;
+
+        /* lvgl心跳节拍 */
+        lv_tick_inc(1);
 
         /* 中断回调函数 */
         g_timer3_object.timer_ops.timer_irq_cb(&g_timer3_object.timer_cfg);
