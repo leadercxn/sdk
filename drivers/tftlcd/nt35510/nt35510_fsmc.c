@@ -17,17 +17,16 @@ int nt35510_hardware_init(tftlcd_driver_t *p_driver)
 
     // 3. handler GPIO
     p_drv_info->rst_pin.gpio_ops.gpio_output_set(&p_drv_info->rst_pin.gpio_cfg, 1);
-    p_drv_info->bl_pin.gpio_ops.gpio_output_set(&p_drv_info->bl_pin.gpio_cfg, 0);
 
     // 4. set lcd_addr
     // p_drv_info->base_addr = ((uint32_t)((FSMC_BASE_ADDR + BANK1_SECTOR1_OFFSET) | BANK_16B_A16_OFFSET));
     if (p_drv_info->buswidth == LCDBUSWIDTH_8B)
     {
-        p_drv_info->lcd_addr = ((lcdtype_8b_t *)(p_drv_info->lcd_addr));
+        p_drv_info->lcd_addr = ((lcdtype_8b_t *)(p_drv_info->base_addr));
     }
     else if (p_drv_info->buswidth == LCDBUSWIDTH_16B)
     {
-        p_drv_info->lcd_addr = ((lcdtype_16b_t *)(p_drv_info->lcd_addr));
+        p_drv_info->lcd_addr = ((lcdtype_16b_t *)(p_drv_info->base_addr));
     }
 
     return 0;
@@ -132,7 +131,7 @@ int nt35510_read_reg(tftlcd_cfg_t *p_cfg, uint16_t cmd)
 int nt35510_init(tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops)
 {
     tftlcd_driver_t *p_dri = p_cfg->p_dri;
-    // nt35510_fsmc_info_t *p_drv_info = (nt35510_fsmc_info_t *)p_dri->p_tft_cfg;
+    nt35510_fsmc_info_t *p_drv_info = (nt35510_fsmc_info_t *)p_dri->p_tft_cfg;
 
     // 1. hardware init
     p_cfg->hardware_init(p_dri);
@@ -146,7 +145,8 @@ int nt35510_init(tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops)
     p_dri->lcd_info.id = p_cfg->read_data(p_dri);     //读回0X80
     p_dri->lcd_info.id <<= 8;
     p_cfg->write_cmd(p_dri, 0XDC00);
-    p_dri->lcd_info.id = p_cfg->read_data(p_dri);    //读回0X00
+    p_dri->lcd_info.id |= p_cfg->read_data(p_dri);    //读回0X00
+
     if (p_dri->lcd_info.id == 0x8000)
     {
         p_dri->lcd_info.id = 0x5510;
@@ -571,8 +571,11 @@ int nt35510_init(tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops)
     p_cfg->write_cmd(p_dri, 0x2900);
 
     // 2.3 设置扫描方向、清屏
-    p_ops->set_scan_dir(p_cfg, 0);
+    p_ops->set_scan_dir(p_cfg, p_dri->lcd_info.dir);
     p_ops->clear_screen(p_cfg, p_ops);
+
+    // 3. 最后亮背光
+    p_drv_info->bl_pin.gpio_ops.gpio_output_set(&p_drv_info->bl_pin.gpio_cfg, 1);
 
     return 0;
 }
@@ -622,13 +625,23 @@ int nt35510_write_ram(tftlcd_cfg_t *p_cfg, uint16_t color)
     return 0;
 }
 
-
+// dir = 0 --> 竖屏
+// dir = 1 --> 横屏
 int nt35510_set_scan_dir(tftlcd_cfg_t *p_cfg, uint16_t dir)
 {
     tftlcd_driver_t *p_dri = p_cfg->p_dri;
     tftlcd_info_t   lcd_info = p_cfg->p_dri->lcd_info;
 
+    p_cfg->write_reg(p_dri, 0x3600, 0x00);
+
     p_cfg->p_dri->lcd_info.dir = dir;
+    if (dir == 1)           // 横屏时需要对调
+    {
+        uint16_t tmp = p_cfg->p_dri->lcd_info.width;
+        p_cfg->p_dri->lcd_info.width = p_cfg->p_dri->lcd_info.height;
+        p_cfg->p_dri->lcd_info.height = tmp;
+    }
+
     p_cfg->write_cmd(p_dri, lcd_info.setxcmd);
     p_cfg->write_data(p_dri, 0);
     p_cfg->write_cmd(p_dri, lcd_info.setxcmd+1);
