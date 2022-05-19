@@ -251,6 +251,9 @@ void conf_whole_gpios_af(uint32_t ahbperiph, GPIO_TypeDef *gpio_port, uint16_t g
     GPIO_Init(gpio_port, &GPIO_InitStructure);
 }
 
+/**
+ * @brief 对gpio对象的初始化
+ */
 int hk_gpio_obj_init(gpio_cfg_t *p_cfg)
 {
     if(p_cfg)
@@ -275,6 +278,9 @@ int hk_gpio_obj_init(gpio_cfg_t *p_cfg)
     return 0;
 }
 
+/**
+ * @brief 对gpio对象的输出设置
+ */
 int hk_gpio_obj_out_set(gpio_cfg_t *p_cfg, uint8_t value)
 {
     if(p_cfg)
@@ -285,3 +291,33 @@ int hk_gpio_obj_out_set(gpio_cfg_t *p_cfg, uint8_t value)
     return 0;
 }
 
+/**
+ * @brief 固定gpio对象为输入模式
+ */
+int hk_gpio_fix_input(gpio_cfg_t *p_cfg)
+{
+    GPIO_InitTypeDef        GPIO_InitStructure;
+
+    GPIO_InitStructure.GPIO_Pin   = p_cfg->gpio_pin;
+    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AIN;
+
+    GPIO_Init((GPIO_TypeDef *)p_cfg->p_port, &GPIO_InitStructure);
+
+    return 0;
+}
+
+/**
+ * @brief 固定gpio对象为输出模式
+ */
+int hk_gpio_fix_output(gpio_cfg_t *p_cfg)
+{
+    GPIO_InitTypeDef        GPIO_InitStructure;
+
+    GPIO_InitStructure.GPIO_Pin   = p_cfg->gpio_pin;
+    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_Out_PP;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+
+    GPIO_Init((GPIO_TypeDef *)p_cfg->p_port, &GPIO_InitStructure);
+
+    return 0;
+}

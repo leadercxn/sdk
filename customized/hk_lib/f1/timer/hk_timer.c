@@ -91,7 +91,7 @@ void TIM3_IRQHandler(void)
         g_timer3_object.timer_cfg.ticks++;
 
         /* lvgl心跳节拍 */
-        lv_tick_inc(1);
+        // lv_tick_inc(1);
 
         /* 中断回调函数 */
         g_timer3_object.timer_ops.timer_irq_cb(&g_timer3_object.timer_cfg);

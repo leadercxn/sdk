@@ -33,5 +33,10 @@ int hk_gpio_obj_init(gpio_cfg_t *p_cfg);
 
 int hk_gpio_obj_out_set(gpio_cfg_t *p_cfg, uint8_t value);
 
+int hk_gpio_fix_input(gpio_cfg_t *p_cfg);
+
+int hk_gpio_fix_output(gpio_cfg_t *p_cfg);
+
+
 #endif
 

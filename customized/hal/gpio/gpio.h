@@ -29,6 +29,8 @@ typedef struct
     int (* gpio_init)       (gpio_cfg_t *p_cfg);
     int (* gpio_output_set) (gpio_cfg_t *p_cfg, uint8_t value);
     int (* gpio_input_get)  (gpio_cfg_t *p_cfg, uint8_t *p_value);
+    int (* gpio_fix_input)  (gpio_cfg_t *p_cfg);
+    int (* gpio_fix_output) (gpio_cfg_t *p_cfg);
 } gpio_ops_t;
 
 
