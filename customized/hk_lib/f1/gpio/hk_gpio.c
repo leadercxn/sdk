@@ -89,7 +89,7 @@ void conf_gpio_input(uint32_t ahbperiph, GPIO_TypeDef *gpio_port, uint32_t gpio_
     RCC_APB2PeriphClockCmd(ahbperiph, ENABLE);
 
     GPIO_InitStructure.GPIO_Pin   = gpio_pin;
-    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AIN;
+    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_IPD;
 
     GPIO_Init(gpio_port, &GPIO_InitStructure);
 }
@@ -168,7 +168,7 @@ void conf_whole_gpios_input(uint32_t ahbperiph, GPIO_TypeDef *gpio_port, uint16_
     RCC_APB2PeriphClockCmd(ahbperiph, ENABLE);
 
     GPIO_InitStructure.GPIO_Pin   = gpio_pins;
-    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AIN;
+    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_IPD;
 
     GPIO_Init(gpio_port, &GPIO_InitStructure);
 }
@@ -200,7 +200,7 @@ void output_shift_to_input(GPIO_TypeDef *gpio_port, uint16_t gpio_pin)
     GPIO_InitTypeDef        GPIO_InitStructure;
 
     GPIO_InitStructure.GPIO_Pin   = gpio_pin;
-    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AIN;
+    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_IPD;
 
     GPIO_Init(gpio_port, &GPIO_InitStructure);
 }
@@ -292,6 +292,19 @@ int hk_gpio_obj_out_set(gpio_cfg_t *p_cfg, uint8_t value)
 }
 
 /**
+ * @brief 获取gpio输入
+ */
+int hk_gpio_obj_in_get(gpio_cfg_t *p_cfg, uint8_t *p_value)
+{
+    if(p_cfg)
+    {
+        get_gpio_value((GPIO_TypeDef *)p_cfg->p_port, p_cfg->gpio_pin , p_value);
+    }
+
+    return 0;
+}
+
+/**
  * @brief 固定gpio对象为输入模式
  */
 int hk_gpio_fix_input(gpio_cfg_t *p_cfg)
@@ -299,7 +312,7 @@ int hk_gpio_fix_input(gpio_cfg_t *p_cfg)
     GPIO_InitTypeDef        GPIO_InitStructure;
 
     GPIO_InitStructure.GPIO_Pin   = p_cfg->gpio_pin;
-    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AIN;
+    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_IPD;
 
     GPIO_Init((GPIO_TypeDef *)p_cfg->p_port, &GPIO_InitStructure);
 
