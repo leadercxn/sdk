@@ -27,7 +27,6 @@ void hk_virt_i2c_init(i2c_cfg_t *p_cfg)
     p_cfg->scl.gpio_ops.gpio_output_set(&p_cfg->scl.gpio_cfg, 1);
 
     p_cfg->delay_us(1000);
-    trace_info("virtual i2c init ok.\r\n");
 
 }
 
@@ -46,7 +45,6 @@ void hk_virt_i2c_start(i2c_cfg_t *p_cfg)
     p_cfg->sda.gpio_ops.gpio_output_set(&p_cfg->sda.gpio_cfg, 0);
     p_cfg->delay_us(2);
     p_cfg->scl.gpio_ops.gpio_output_set(&p_cfg->scl.gpio_cfg, 0);
-    trace_info("start.\r\n");
 }
 
 void hk_virt_i2c_stop(i2c_cfg_t *p_cfg)
@@ -89,14 +87,12 @@ uint8_t hk_virt_i2c_wait_ack(i2c_cfg_t *p_cfg, struct i2c_ops *p_ops)
         timeout++;
         if(timeout > 250)
         {
-            trace_info("[wait_ack] timeout...\r\n");
             p_ops->xfer_stop(p_cfg);
             return -EIO;
         }
         p_cfg->sda.gpio_ops.gpio_input_get(&p_cfg->sda.gpio_cfg, &sda_value);
         p_cfg->delay_us(2);
     }
-    trace_info("[wait_ack] sda value = %d\r\n", sda_value);
 
     p_cfg->scl.gpio_ops.gpio_output_set(&p_cfg->scl.gpio_cfg, 0);
 
@@ -141,7 +137,6 @@ void hk_virt_i2c_set_nack(i2c_cfg_t *p_cfg)
 
 void hk_virt_i2c_send_byte(i2c_cfg_t *p_cfg, uint8_t byte)
 {
-    trace_info("start send byte.\r\n");
     uint8_t i = 0;
     uint8_t temp = 0;
 
@@ -166,7 +161,6 @@ void hk_virt_i2c_send_byte(i2c_cfg_t *p_cfg, uint8_t byte)
     }
 
     // p_cfg->sda.gpio_ops.gpio_output_set(&p_cfg->sda.gpio_cfg, 1);
-    trace_info("end send byte.\r\n");
 }
 
 /**
@@ -176,7 +170,6 @@ void hk_virt_i2c_send_byte(i2c_cfg_t *p_cfg, uint8_t byte)
  */
 uint8_t hk_virt_i2c_read_byte(i2c_cfg_t *p_cfg, struct i2c_ops *p_ops, bool ack)
 {
-    trace_info("start read byte.\r\n");
     uint8_t i = 0,recv_byte = 0;
     uint8_t sda_value = 0;
 
@@ -191,7 +184,6 @@ uint8_t hk_virt_i2c_read_byte(i2c_cfg_t *p_cfg, struct i2c_ops *p_ops, bool ack)
         recv_byte <<= 1;
 
         p_cfg->sda.gpio_ops.gpio_input_get(&p_cfg->sda.gpio_cfg, &sda_value);
-        trace_info("[read byte] sda value = %d\r\n", sda_value);
         if (sda_value)
         {
             recv_byte++;
@@ -209,6 +201,5 @@ uint8_t hk_virt_i2c_read_byte(i2c_cfg_t *p_cfg, struct i2c_ops *p_ops, bool ack)
     }
 
     return recv_byte;
-    trace_info("end read byte.\r\n");
 }
 
