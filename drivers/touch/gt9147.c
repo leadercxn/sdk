@@ -74,12 +74,12 @@ uint8_t gt9147_write_reg(touch_cfg_t *p_cfg, uint16_t reg, uint8_t *buf, uint8_t
 
 void gt9147_read_reg(touch_cfg_t *p_cfg, uint16_t reg, uint8_t *buf, uint8_t len)
 {
-	trace_info("[gt9147] start read reg.\r\n");
 	uint8_t i;
 
     p_cfg->p_i2c_obj.i2c_ops.xfer_start(&p_cfg->p_i2c_obj.i2c_cfg);
     p_cfg->p_i2c_obj.i2c_ops.send_byte(&p_cfg->p_i2c_obj.i2c_cfg, GT_CMD_WR);
     p_cfg->p_i2c_obj.i2c_ops.wait_ack(&p_cfg->p_i2c_obj.i2c_cfg, &p_cfg->p_i2c_obj.i2c_ops);
+
     p_cfg->p_i2c_obj.i2c_ops.send_byte(&p_cfg->p_i2c_obj.i2c_cfg, (reg >> 8));
     p_cfg->p_i2c_obj.i2c_ops.wait_ack(&p_cfg->p_i2c_obj.i2c_cfg, &p_cfg->p_i2c_obj.i2c_ops);
     p_cfg->p_i2c_obj.i2c_ops.send_byte(&p_cfg->p_i2c_obj.i2c_cfg, (reg&0xFF));
@@ -93,12 +93,8 @@ void gt9147_read_reg(touch_cfg_t *p_cfg, uint16_t reg, uint8_t *buf, uint8_t len
 	{	   
         buf[i] = p_cfg->p_i2c_obj.i2c_ops.read_byte(&p_cfg->p_i2c_obj.i2c_cfg, &p_cfg->p_i2c_obj.i2c_ops, (i==(len-1)?0:1));
 		p_cfg->p_i2c_obj.i2c_cfg.delay_us(5);
-		// trace_info("buf[%d] = %d\r\n", i, buf[i]);
 	} 
     p_cfg->p_i2c_obj.i2c_ops.xfer_stop(&p_cfg->p_i2c_obj.i2c_cfg);	//产生一个停止条件
-	trace_info("buf = %s, len = %d.\r\n", buf, len);
-
-	trace_info("[gt9147] end read reg.\r\n");
 }
 
 uint8_t gt9147_init(touch_cfg_t *p_cfg)
@@ -114,14 +110,13 @@ uint8_t gt9147_init(touch_cfg_t *p_cfg)
 
     // 1.1 复位
     p_cfg->p_rst_obj.gpio_ops.gpio_output_set(&p_cfg->p_rst_obj.gpio_cfg, 0);
-    p_cfg->p_i2c_obj.i2c_ops.delay_ms(3000);
+    p_cfg->p_i2c_obj.i2c_ops.delay_ms(10);
     p_cfg->p_rst_obj.gpio_ops.gpio_output_set(&p_cfg->p_rst_obj.gpio_cfg, 1);
-    p_cfg->p_i2c_obj.i2c_ops.delay_ms(100);
+    p_cfg->p_i2c_obj.i2c_ops.delay_ms(10);
 
-	trace_info("gt9147 reset ok\r\n");
 
     // TODO: 若需要使能INT，需要配置INT中断使能
-	p_cfg->p_int_obj.gpio_ops.gpio_fix_input(&p_cfg->p_int_obj.gpio_cfg);
+	// p_cfg->p_int_obj.gpio_ops.gpio_fix_input(&p_cfg->p_int_obj.gpio_cfg);
 
     p_cfg->p_i2c_obj.i2c_ops.delay_ms(1000);
     gt9147_read_reg(p_cfg, GT_PID_REG, temp, 4);
