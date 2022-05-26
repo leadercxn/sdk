@@ -121,9 +121,9 @@ uint8_t gt9147_init(touch_cfg_t *p_cfg)
 	trace_info("gt9147 reset ok\r\n");
 
     // TODO: 若需要使能INT，需要配置INT中断使能
-	// p_cfg->p_int_obj.gpio_ops.gpio_fix_input(&p_cfg->p_int_obj.gpio_cfg);
+	p_cfg->p_int_obj.gpio_ops.gpio_fix_input(&p_cfg->p_int_obj.gpio_cfg);
 
-    p_cfg->p_i2c_obj.i2c_ops.delay_ms(100);
+    p_cfg->p_i2c_obj.i2c_ops.delay_ms(1000);
     gt9147_read_reg(p_cfg, GT_PID_REG, temp, 4);
 
 	temp[4] = '\0';
