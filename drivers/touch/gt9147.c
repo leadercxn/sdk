@@ -54,11 +54,11 @@ uint8_t gt9147_write_reg(touch_cfg_t *p_cfg, uint16_t reg, uint8_t *buf, uint8_t
     p_cfg->p_i2c_obj.i2c_ops.xfer_start(&p_cfg->p_i2c_obj.i2c_cfg);
     p_cfg->p_i2c_obj.i2c_ops.send_byte(&p_cfg->p_i2c_obj.i2c_cfg, GT_CMD_WR);
     p_cfg->p_i2c_obj.i2c_ops.wait_ack(&p_cfg->p_i2c_obj.i2c_cfg, &p_cfg->p_i2c_obj.i2c_ops);
+
     p_cfg->p_i2c_obj.i2c_ops.send_byte(&p_cfg->p_i2c_obj.i2c_cfg, (reg >> 8));
     p_cfg->p_i2c_obj.i2c_ops.wait_ack(&p_cfg->p_i2c_obj.i2c_cfg, &p_cfg->p_i2c_obj.i2c_ops);
     p_cfg->p_i2c_obj.i2c_ops.send_byte(&p_cfg->p_i2c_obj.i2c_cfg, (reg & 0XFF));
     p_cfg->p_i2c_obj.i2c_ops.wait_ack(&p_cfg->p_i2c_obj.i2c_cfg, &p_cfg->p_i2c_obj.i2c_ops);
-
 
 	for (i = 0; i < len; i++)
 	{	   
@@ -115,10 +115,11 @@ uint8_t gt9147_init(touch_cfg_t *p_cfg)
     p_cfg->p_i2c_obj.i2c_ops.delay_ms(10);
 
 
-    // TODO: 若需要使能INT，需要配置INT中断使能
-	// p_cfg->p_int_obj.gpio_ops.gpio_fix_input(&p_cfg->p_int_obj.gpio_cfg);
+    // 此处必须设置成非上拉输入，否则GT9147无法正常工作
+	p_cfg->p_int_obj.gpio_cfg.mode = GPIO_Mode_IN_FLOATING;
+	p_cfg->p_int_obj.gpio_ops.gpio_fix_input(&p_cfg->p_int_obj.gpio_cfg);
 
-    p_cfg->p_i2c_obj.i2c_ops.delay_ms(1000);
+    p_cfg->p_i2c_obj.i2c_ops.delay_ms(100);
     gt9147_read_reg(p_cfg, GT_PID_REG, temp, 4);
 
 	temp[4] = '\0';
@@ -128,16 +129,18 @@ uint8_t gt9147_init(touch_cfg_t *p_cfg)
 	{
 		temp[0] = 0x02;	
         gt9147_write_reg(p_cfg, GT_CTRL_REG, temp, 1);		   //软复位GT9147
-        gt9147_write_reg(p_cfg, GT_CFGS_REG, temp, 1);		   //读取GT_CFGS_REG寄存器
+        gt9147_read_reg(p_cfg, GT_CFGS_REG, temp, 1);		   //读取GT_CFGS_REG寄存器
 
 		if (temp[0] < 0X60)                                     //默认版本比较低,需要更新flash配置
 		{
 			trace_info("Default Ver:%d\r\n",temp[0]);
 			gt9147_send_cfg(p_cfg, 1);//更新并保存配置
 		}
-		p_cfg->p_i2c_obj.i2c_ops.delay_ms(10);
+
+		p_cfg->p_i2c_obj.i2c_ops.delay_ms(100);
 		temp[0] = 0X00;	 
 		gt9147_write_reg(p_cfg, GT_CTRL_REG, temp, 1);	        //结束复位   	
+
 		return 0;
 	} 
 	return 1;
@@ -157,13 +160,14 @@ uint8_t gt9147_scan(touch_cfg_t *p_cfg, uint8_t mode)
 	uint8_t temp;
 	uint8_t tempsta;
     static uint8_t t = 0;//控制查询间隔,从而降低CPU占用率   
-    tp_dev_t tp_dev = *(tp_dev_t *)p_cfg->p_touch_cfg;
+    tp_dev_t* tp_dev = p_cfg->p_touch_dev;
 
 	t++;
 	if (((t % 10) == 0) || (t < 10))        //空闲时,每进入10次CTP_Scan函数才检测1次,从而节省CPU使用率
 	{
+		// trace_info("scan...\r\n");
         gt9147_read_reg(p_cfg, GT_GSTID_REG, &mode, 1);
- 		if ((mode & 0x80) && ((mode & 0XF) < 6))
+		if ((mode & 0x80) && ((mode & 0XF) < 6))
 		{
 			temp = 0;
             gt9147_write_reg(p_cfg, GT_GSTID_REG,&temp,1);      // 清标志
@@ -172,46 +176,45 @@ uint8_t gt9147_scan(touch_cfg_t *p_cfg, uint8_t mode)
         if ((mode & 0XF) && ((mode & 0XF) < 6))
 		{
 			temp = 0XFF << (mode & 0xF);		//将点的个数转换为1的位数,匹配tp_dev.sta定义 
-			tempsta = tp_dev.sta;			    //保存当前的tp_dev.sta值
-			tp_dev.sta = (~temp) | TP_PRES_DOWN | TP_CATH_PRES; 
-			tp_dev.x[4] = tp_dev.x[0];	//保存触点0的数据
-			tp_dev.y[4] = tp_dev.y[0];
+			tempsta = tp_dev->sta;			    //保存当前的tp_dev.sta值
+			tp_dev->sta = (~temp) | TP_PRES_DOWN | TP_CATH_PRES; 
+			tp_dev->x[4] = tp_dev->x[0];	//保存触点0的数据
+			tp_dev->y[4] = tp_dev->y[0];
 
 			for (i = 0; i < 5; i++)
 			{
-				if (tp_dev.sta&(1<<i))	                                //触摸有效?
+				if (tp_dev->sta&(1<<i))	                                //触摸有效?
 				{
                     gt9147_read_reg(p_cfg, GT9147_TPX_TBL[i],buf,4);
-					if (tp_dev.touchtype & 0X01)                        //横屏
+					if (tp_dev->touchtype & 0X01)                        //横屏
 					{
-						tp_dev.y[i] = ((uint16_t)buf[1] << 8) + buf[0];
-						tp_dev.x[i] = 800 - (((uint16_t)buf[3] << 8) + buf[2]);
+						tp_dev->y[i] = ((uint16_t)buf[1] << 8) + buf[0];
+						tp_dev->x[i] = 800 - (((uint16_t)buf[3] << 8) + buf[2]);
 					}
                     else
 					{
-						tp_dev.x[i] = ((uint16_t)buf[1] << 8) + buf[0];
-						tp_dev.y[i] = ((uint16_t)buf[3] << 8) + buf[2];
+						tp_dev->x[i] = ((uint16_t)buf[1] << 8) + buf[0];
+						tp_dev->y[i] = ((uint16_t)buf[3] << 8) + buf[2];
 					}  
-					//printf("x[%d]:%d,y[%d]:%d\r\n",i,tp_dev.x[i],i,tp_dev.y[i]);
+					// trace_info("x[%d]:%d,y[%d]:%d\r\n",i,tp_dev->x[i],i,tp_dev->y[i]);
 				}			
 			} 
 
 			res=1;
-			// TODO: if (tp_dev.x[0] > lcddev.width || tp_dev.y[0] > lcddev.height)      //非法数据(坐标超出了)
-			if (1)
+			if (tp_dev->x[0] > tp_dev->lcd_width || tp_dev->y[0] > tp_dev->lcd_height)      //非法数据(坐标超出了)
             { 
 				if ((mode & 0XF) > 1)		//有其他点有数据,则复第二个触点的数据到第一个触点.
 				{
-					tp_dev.x[0] = tp_dev.x[1];
-					tp_dev.y[0] = tp_dev.y[1];
+					tp_dev->x[0] = tp_dev->x[1];
+					tp_dev->y[0] = tp_dev->y[1];
 					t=0;				    //触发一次,则会最少连续监测10次,从而提高命中率
 				}
                 else					    //非法数据,则忽略此次数据(还原原来的)  
 				{
-					tp_dev.x[0] = tp_dev.x[4];
-					tp_dev.y[0] = tp_dev.y[4];
+					tp_dev->x[0] = tp_dev->x[4];
+					tp_dev->y[0] = tp_dev->y[4];
 					mode = 0X80;		
-					tp_dev.sta = tempsta;	//恢复tp_dev.sta
+					tp_dev->sta = tempsta;	//恢复tp_dev.sta
 				}
 			}
             else 
@@ -222,15 +225,15 @@ uint8_t gt9147_scan(touch_cfg_t *p_cfg, uint8_t mode)
 	}
 	if ((mode & 0x8F) == 0x80)          //无触摸点按下
 	{ 
-		if (tp_dev.sta & TP_PRES_DOWN)	    //之前是被按下的
+		if (tp_dev->sta & TP_PRES_DOWN)	    //之前是被按下的
 		{
-			tp_dev.sta &= ~(1<<7);	    //标记按键松开
+			tp_dev->sta &= ~(1<<7);	    //标记按键松开
 		}
         else						    //之前就没有被按下
 		{ 
-			tp_dev.x[0]=0xffff;
-			tp_dev.y[0]=0xffff;
-			tp_dev.sta&=0XE0;	        //清除点有效标记	
+			tp_dev->x[0]=0xffff;
+			tp_dev->y[0]=0xffff;
+			tp_dev->sta&=0XE0;	        //清除点有效标记	
 		}	 
 	} 	
 	if (t>240)
