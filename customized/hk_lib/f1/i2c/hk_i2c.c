@@ -6,6 +6,7 @@
 
 #include "hk_i2c.h"
 
+#include "trace.h"
 
 /* 
  * 
