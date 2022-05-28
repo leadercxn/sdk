@@ -22,6 +22,7 @@ typedef struct
     uint32_t    gpio_pin;
     gpio_dir_e  gpio_dir;
     uint32_t    flag;
+    uint8_t     mode;
 } gpio_cfg_t;
 
 typedef struct

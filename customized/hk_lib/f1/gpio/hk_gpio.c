@@ -82,14 +82,14 @@ void set_gpio_value(GPIO_TypeDef *gpio_port , uint32_t gpio_pin ,uint8_t value)
  *             @arg ...
  *
  */
-void conf_gpio_input(uint32_t ahbperiph, GPIO_TypeDef *gpio_port, uint32_t gpio_pin)
+void conf_gpio_input(uint32_t ahbperiph, GPIO_TypeDef *gpio_port, uint32_t gpio_pin, uint8_t mode)
 {
     GPIO_InitTypeDef        GPIO_InitStructure;
 
     RCC_APB2PeriphClockCmd(ahbperiph, ENABLE);
 
     GPIO_InitStructure.GPIO_Pin   = gpio_pin;
-    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_IPU;
+    GPIO_InitStructure.GPIO_Mode  = mode;
 
     GPIO_Init(gpio_port, &GPIO_InitStructure);
 }
@@ -161,14 +161,14 @@ void set_halt_gpios_value(GPIO_TypeDef *gpio_port ,uint8_t value, bool lsb)
  * @param  gpio_pins: 对应引脚的bit位要置1
  *           
  */
-void conf_whole_gpios_input(uint32_t ahbperiph, GPIO_TypeDef *gpio_port, uint16_t gpio_pins)
+void conf_whole_gpios_input(uint32_t ahbperiph, GPIO_TypeDef *gpio_port, uint16_t gpio_pins, uint8_t mode)
 {
     GPIO_InitTypeDef        GPIO_InitStructure;
 
     RCC_APB2PeriphClockCmd(ahbperiph, ENABLE);
 
     GPIO_InitStructure.GPIO_Pin   = gpio_pins;
-    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_IPU;
+    GPIO_InitStructure.GPIO_Mode  = mode;
 
     GPIO_Init(gpio_port, &GPIO_InitStructure);
 }
@@ -195,12 +195,12 @@ void get_halt_gpios_value(GPIO_TypeDef *gpio_port ,bool lsb, uint8_t *p_value)
 /**
  * @brief 输出模式转为输入
  */
-void output_shift_to_input(GPIO_TypeDef *gpio_port, uint16_t gpio_pin)
+void output_shift_to_input(GPIO_TypeDef *gpio_port, uint16_t gpio_pin, uint8_t mode)
 {
     GPIO_InitTypeDef        GPIO_InitStructure;
 
     GPIO_InitStructure.GPIO_Pin   = gpio_pin;
-    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_IPU;
+    GPIO_InitStructure.GPIO_Mode  = mode;
 
     GPIO_Init(gpio_port, &GPIO_InitStructure);
 }
@@ -266,7 +266,7 @@ int hk_gpio_obj_init(gpio_cfg_t *p_cfg)
             }
             else
             {
-                conf_gpio_input(p_cfg->gpio_clk, (GPIO_TypeDef *)p_cfg->p_port, p_cfg->gpio_pin);
+                conf_gpio_input(p_cfg->gpio_clk, (GPIO_TypeDef *)p_cfg->p_port, p_cfg->gpio_pin, p_cfg->mode);
             }
         }
         else
@@ -312,7 +312,7 @@ int hk_gpio_fix_input(gpio_cfg_t *p_cfg)
     GPIO_InitTypeDef        GPIO_InitStructure;
 
     GPIO_InitStructure.GPIO_Pin   = p_cfg->gpio_pin;
-    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_IPU;
+    GPIO_InitStructure.GPIO_Mode  = p_cfg->mode;
 
     GPIO_Init((GPIO_TypeDef *)p_cfg->p_port, &GPIO_InitStructure);
 
