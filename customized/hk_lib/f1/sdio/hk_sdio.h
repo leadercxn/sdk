@@ -30,8 +30,8 @@ SD_Error hk_sd_write_block(sdio_cfg_t *p_cfg, uint8_t *buf,long long addr,  uint
 SD_Error hk_sd_write_multi_blocks(sdio_cfg_t *p_cfg, uint8_t *buf,long long addr,uint16_t blksize,uint32_t nblks);
 SD_Error hk_sd_process_IRQSrc(void);
 void hk_sd_dma_cfg(uint32_t*mbuf,uint32_t bufsize,uint32_t dir); 
-uint8_t hk_sd_read_disk(sdio_cfg_t *p_cfg, uint8_t*buf,uint32_t sector,uint8_t cnt); 	//读SD卡,fatfs/usb调用
-uint8_t hk_sd_write_disk(sdio_cfg_t *p_cfg, uint8_t*buf,uint32_t sector,uint8_t cnt);	//写SD卡,fatfs/usb调用
+uint8_t hk_sd_read_disk(sdio_cfg_t *p_cfg, uint8_t *buf, uint32_t sector,uint8_t cnt); 	//读SD卡,fatfs/usb调用
+uint8_t hk_sd_write_disk(sdio_cfg_t *p_cfg, uint8_t*buf, uint32_t sector,uint8_t cnt);	//写SD卡,fatfs/usb调用
 void hk_sdio_show_cardinfo(sdio_cfg_t *p_cfg);
 
 

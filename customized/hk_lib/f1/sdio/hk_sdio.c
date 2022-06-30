@@ -690,21 +690,21 @@ SD_Error hk_sd_get_card_info(sdio_cfg_t *p_cfg, sd_card_info_t *cardinfo)
 	cardinfo->rca 		= (uint16_t)p_cfg->cardinfo->rca;			// 卡RCA值
 
 	tmp = (uint8_t)((CSD_Tab[0] & 0xFF000000) >> 24);
-	cardinfo->sd_csd.CSDStruct = (tmp & 0xC0) >> 6;		//CSD结构
+	cardinfo->sd_csd.CSDStruct = (tmp & 0xC0) >> 6;			//CSD结构
 	cardinfo->sd_csd.SysSpecVersion = (tmp & 0x3C) >> 2;	//2.0协议还没定义这部分(为保留),应该是后续协议定义的
-	cardinfo->sd_csd.Reserved1 = tmp & 0x03;			//2个保留位  
+	cardinfo->sd_csd.Reserved1 = tmp & 0x03;				//2个保留位  
 
-	tmp = (uint8_t)((CSD_Tab[0] & 0x00FF0000) >> 16);	//第1个字节
-	cardinfo->sd_csd.TAAC = tmp;				   		//数据读时间1
+	tmp = (uint8_t)((CSD_Tab[0] & 0x00FF0000) >> 16);		//第1个字节
+	cardinfo->sd_csd.TAAC = tmp;				   			//数据读时间1
 
-	tmp = (uint8_t)((CSD_Tab[0] & 0x0000FF00) >> 8);	//第2个字节
-	cardinfo->sd_csd.NSAC = tmp;		  				//数据读时间2
+	tmp = (uint8_t)((CSD_Tab[0] & 0x0000FF00) >> 8);		//第2个字节
+	cardinfo->sd_csd.NSAC = tmp;		  					//数据读时间2
 
-	tmp = (uint8_t)(CSD_Tab[0] & 0x000000FF);			//第3个字节
-	cardinfo->sd_csd.MaxBusClkFrec = tmp;		  		//传输速度	 
+	tmp = (uint8_t)(CSD_Tab[0] & 0x000000FF);				//第3个字节
+	cardinfo->sd_csd.MaxBusClkFrec = tmp;		  			//传输速度	 
 	
-	tmp = (uint8_t)((CSD_Tab[1] & 0xFF000000) >> 24);	//第4个字节
-	cardinfo->sd_csd.CardComdClasses = tmp<<4;    		//卡指令类高四位
+	tmp = (uint8_t)((CSD_Tab[1] & 0xFF000000) >> 24);		//第4个字节
+	cardinfo->sd_csd.CardComdClasses = tmp<<4;    			//卡指令类高四位
 
 	tmp = (uint8_t)((CSD_Tab[1] & 0x00FF0000) >> 16);		//第5个字节
 	cardinfo->sd_csd.CardComdClasses |= (tmp & 0xF0) >> 4;	//卡指令类低四位
@@ -732,7 +732,7 @@ SD_Error hk_sd_get_card_info(sdio_cfg_t *p_cfg, sd_card_info_t *cardinfo)
         cardinfo->sd_csd.MaxRdCurrentVDDMin = (tmp & 0x38) >> 3;
 		cardinfo->sd_csd.MaxRdCurrentVDDMax = (tmp & 0x07);
 
- 		tmp = (uint8_t)((CSD_Tab[2] & 0x00FF0000) >> 16);	//第9个字节	
+ 		tmp = (uint8_t)((CSD_Tab[2] & 0x00FF0000) >> 16);		//第9个字节	
 		cardinfo->sd_csd.MaxWrCurrentVDDMin = (tmp & 0xE0) >> 5;
 		cardinfo->sd_csd.MaxWrCurrentVDDMax = (tmp & 0x1C) >> 2;
 		cardinfo->sd_csd.DeviceSizeMul = (tmp & 0x03) << 1;		//C_SIZE_MULT
@@ -741,7 +741,7 @@ SD_Error hk_sd_get_card_info(sdio_cfg_t *p_cfg, sd_card_info_t *cardinfo)
 		cardinfo->sd_csd.DeviceSizeMul |= (tmp & 0x80) >> 7;
         cardinfo->card_capacity = (cardinfo->sd_csd.DeviceSize + 1);	//计算卡容量
 		cardinfo->card_capacity *= (1 << (cardinfo->sd_csd.DeviceSizeMul + 2));
-		cardinfo->card_blocksize = 1 << (cardinfo->sd_csd.RdBlockLen);//块大小
+		cardinfo->card_blocksize = 1 << (cardinfo->sd_csd.RdBlockLen);	//块大小
 		cardinfo->card_capacity *= cardinfo->card_blocksize;
 	}
     else if (p_cfg->cardinfo->cardtype == SDIO_HIGH_CAPACITY_SD_CARD)	//高容量卡
@@ -1307,7 +1307,7 @@ SD_Error hk_sd_read_block(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr, uint1
 	return errorstatus; 
 }
 
-uint32_t *tempbuff __attribute__ ((aligned(4)));	;
+uint32_t *tempbuff __attribute__ ((aligned(4)));
 SD_Error hk_sd_read_multi_blocks(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr, uint16_t blksize, uint32_t nblks)
 {
 	SD_Error errorstatus = SD_OK;
@@ -2019,7 +2019,7 @@ SD_Error hk_sd_write_multi_blocks(sdio_cfg_t *p_cfg, uint8_t *buf, long long add
 //sector:扇区地址
 //cnt:扇区个数	
 //返回值:错误状态;0,正常;其他,错误代码;				  				 
-uint8_t hk_sd_read_disk(sdio_cfg_t *p_cfg, uint8_t *buf,uint32_t sector,uint8_t cnt)
+uint8_t hk_sd_read_disk(sdio_cfg_t *p_cfg, uint8_t *buf, uint32_t sector, uint8_t cnt)
 {
 	uint8_t sta = SD_OK;
 	long long lsector = sector;
@@ -2055,7 +2055,7 @@ uint8_t hk_sd_read_disk(sdio_cfg_t *p_cfg, uint8_t *buf,uint32_t sector,uint8_t 
 //sector:扇区地址
 //cnt:扇区个数	
 //返回值:错误状态;0,正常;其他,错误代码;	
-uint8_t hk_sd_write_disk(sdio_cfg_t *p_cfg, uint8_t*buf,uint32_t sector,uint8_t cnt)
+uint8_t hk_sd_write_disk(sdio_cfg_t *p_cfg, uint8_t*buf, uint32_t sector, uint8_t cnt)
 {
 	uint8_t sta = SD_OK;
 	uint8_t n;
@@ -2085,8 +2085,8 @@ uint8_t hk_sd_write_disk(sdio_cfg_t *p_cfg, uint8_t*buf,uint32_t sector,uint8_t 
 	return sta;
 }
 
-void hk_sdio_send_cmd(uint8_t cmdindex,uint8_t waitrsp,uint32_t arg);
-void hk_sdio_send_data_cfg(uint32_t datatimeout,uint32_t datalen,uint8_t blksize,uint8_t dir);
+void hk_sdio_send_cmd(uint8_t cmdindex, uint8_t waitrsp, uint32_t arg);
+void hk_sdio_send_data_cfg(uint32_t datatimeout, uint32_t datalen, uint8_t blksize, uint8_t dir);
 
 void hk_sdio_show_cardinfo(sdio_cfg_t *p_cfg)
 {

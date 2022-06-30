@@ -368,8 +368,8 @@ typedef struct {
     SD_Error (* sd_process_IRQSrc)(void);
     void 	 (* sd_dma_cfg)(uint32_t*mbuf,uint32_t bufsize,uint32_t dir); 
 	void 	 (* show_card_info)(sdio_cfg_t *p_cfg);
-    uint8_t  (* sd_read_disk)(uint8_t*buf,uint32_t sector,uint8_t cnt); 	//读SD卡,fatfs/usb调用
-    uint8_t  (* sd_write_disk)(uint8_t*buf,uint32_t sector,uint8_t cnt);	//写SD卡,fatfs/usb调用
+    uint8_t  (* sd_read_disk)(sdio_cfg_t *p_cfg, uint8_t *buf, uint32_t sector,uint8_t cnt); 	//读SD卡,fatfs/usb调用
+    uint8_t  (* sd_write_disk)(sdio_cfg_t *p_cfg, uint8_t *buf, uint32_t sector,uint8_t cnt);	//写SD卡,fatfs/usb调用
 } sdio_ops_t;
 
 typedef struct {
