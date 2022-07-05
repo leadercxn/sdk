@@ -14,7 +14,6 @@ extern sdio_obj_t g_sdio_obj;
 
 // SD_ReadDisk/SD_WriteDisk函数专用buf,当这两个函数的数据缓存区地址不是4字节对齐的时候,
 // 需要用到该数组,确保数据缓存区地址是4字节对齐的.
-// TODO: 
 uint8_t SDIO_DATA_BUFFER[512] __attribute__ ((aligned(4)));	
 
 SD_Error CmdError(void);  
@@ -250,7 +249,7 @@ SD_Error SDEnWideBus(uint8_t enx)
 	{
 		return SD_LOCK_UNLOCK_FAILED;					//SD卡处于LOCKED状态
 	}
- 	// errorstatus = FindSCR(RCA, scr);						//得到SCR寄存器数据
+
 	errorstatus = FindSCR(g_sdio_obj.sdio_cfg.cardinfo->rca, scr);		//得到SCR寄存器数据
 	if (errorstatus != SD_OK)
 	{
@@ -607,10 +606,6 @@ SD_Error hk_sd_initial_cards(sdio_cfg_t *p_cfg)
 		CID_Tab[1] = SDIO->RESP2;
 		CID_Tab[2] = SDIO->RESP3;
 		CID_Tab[3] = SDIO->RESP4;
-		// p_cfg->cardinfo->sd_cid[0] = SDIO->RESP1;		
-		// p_cfg->cardinfo->sd_cid[1] = SDIO->RESP2;	
-		// p_cfg->cardinfo->sd_cid[2] = SDIO->RESP3;	
-		// p_cfg->cardinfo->sd_cid[3] = SDIO->RESP4;
 	}
 
     //判断卡类型
@@ -672,10 +667,6 @@ SD_Error hk_sd_initial_cards(sdio_cfg_t *p_cfg)
 		CSD_Tab[1]=SDIO->RESP2;
 		CSD_Tab[2]=SDIO->RESP3;						
 		CSD_Tab[3]=SDIO->RESP4;		
-		// p_cfg->cardinfo->sd_csd[0] = SDIO->RESP1;		
-		// p_cfg->cardinfo->sd_csd[1] = SDIO->RESP2;	
-		// p_cfg->cardinfo->sd_csd[2] = SDIO->RESP3;	
-		// p_cfg->cardinfo->sd_csd[3] = SDIO->RESP4;		    
 	}
 	return SD_OK;//卡初始化成功
 } 
@@ -961,22 +952,6 @@ SD_Error hk_sd_init(sdio_cfg_t *p_cfg)
     p_hw_cfg->sd_gpio1.gpio_ops.gpio_init(&p_hw_cfg->sd_gpio1.gpio_cfg);
     p_hw_cfg->sd_gpio2.gpio_ops.gpio_init(&p_hw_cfg->sd_gpio2.gpio_cfg);
 
-    // GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8|GPIO_Pin_9|GPIO_Pin_10|GPIO_Pin_11|GPIO_Pin_12;	//PC.8~12 复用输出
-    // GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP; 		 //复用推挽输出
-    // GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		 //IO口速度为50MHz
-    // GPIO_Init(GPIOC, &GPIO_InitStructure);					 //根据设定参数初始化PC.8~12 
-
-    // GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;	//PD2 复用输出
-    // GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP; 		 //复用推挽输出
-    // GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		 //IO口速度为50MHz
-    // GPIO_Init(GPIOD, &GPIO_InitStructure);					 //根据设定参数初始化PD2
-
-    // TODO: PD7是否确定可以不用
-    // GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7;	//PD7 上拉输入
-    // GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU; 		 //复用推挽输出
-    // GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		 //IO口速度为50MHz
-    // GPIO_Init(GPIOD, &GPIO_InitStructure);					 //根据设定参数初始化PD7
-
  	//SDIO外设寄存器设置为默认值 			   	   
 	SDIO_DeInit();
 
@@ -1028,7 +1003,6 @@ SD_Error hk_sd_init(sdio_cfg_t *p_cfg)
 		errorstatus = hk_sd_set_device_mode(p_cfg, SD_POLLING_MODE);	//设置为查询模式
     }
 
-	trace_info("error status = %d\r\n", errorstatus);
 	return errorstatus;	
 }
 
