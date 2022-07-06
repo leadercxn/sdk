@@ -9,45 +9,39 @@
  //文件类型列表
 uint8_t *const FILE_TYPE_TBL[FILE_MAX_TYPE_NUM][FILE_MAX_SUBT_NUM]=
 {
-{"BIN"},			//BIN文件
-{"LRC"},			//LRC文件
-{"NES"},			//NES文件
-{"TXT","C","H"},	//文本文件
-{"MP1","MP2","MP3","MP4","M4A","3GP","3G2","OGG","AAC","WMA","WAV","MID","FLAC"},//音乐文件
-{"BMP","JPG","JPEG","GIF"},//图片文件 
+	{"BIN"},			//BIN文件
+	{"LRC"},			//LRC文件
+	{"NES"},			//NES文件
+	{"TXT","C","H"},	//文本文件
+	{"MP1","MP2","MP3","MP4","M4A","3GP","3G2","OGG","AAC","WMA","WAV","MID","FLAC"},//音乐文件
+	{"BMP","JPG","JPEG","GIF"},//图片文件 
 };
-
-// 公共文件区,使用malloc的时候
-FATFS *fs[_VOLUMES];	//逻辑磁盘工作区.	 
-FIL *file;	  			//文件1
-FIL *ftemp;	  			//文件2.
-UINT br,bw;				//读写变量
-FILINFO fileinfo;		//文件信息
-DIR dir;  				//目录
-
-uint8_t *fatbuf;		//SD卡数据缓存区
 
 // 为exfuns申请内存
 // 返回值:0,成功
 // 1,失败
-uint8_t exfuns_init(void)
+uint8_t exfuns_init(struct fatfs_cfg *p_cfg)
 {
 	uint8_t i;
 	for (i = 0; i < _VOLUMES; i++)
 	{
-		fs[i] = (FATFS*)malloc(sizeof(FATFS));	//为磁盘i工作区申请内存	
-		if (!fs[i])
+		p_cfg->fs[i] = (FATFS*)malloc(sizeof(FATFS));	//为磁盘i工作区申请内存	
+		if (!p_cfg->fs[i])
 		{
 			break;
 		}
 	}
 
-	file = (FIL*)malloc(sizeof(FIL));			//为file申请内存
-	ftemp = (FIL*)malloc(sizeof(FIL));		//为ftemp申请内存
-	fatbuf = (uint8_t*)malloc(512);				//为fatbuf申请内存
-	if (i == _VOLUMES && file && ftemp && fatbuf)
+	p_cfg->file = (FIL*)malloc(sizeof(FIL));			//为file申请内存
+	p_cfg->ftemp = (FIL*)malloc(sizeof(FIL));			//为ftemp申请内存
+	p_cfg->fatbuf = (uint8_t*)malloc(512);				//为fatbuf申请内存
+	if (i == _VOLUMES && p_cfg->file && p_cfg->ftemp && p_cfg->fatbuf)
 	{
-		return 0;  		//申请有一个失败,即失败.
+		return 0;  		
+	}
+	else
+	{
+		return 1;
 	}
 }
 
@@ -72,7 +66,7 @@ uint8_t char_upper(uint8_t c)
 //fname:文件名
 //返回值:0XFF,表示无法识别的文件类型编号.
 //		 其他,高四位表示所属大类,低四位表示所属小类.
-uint8_t f_typetell(uint8_t *fname)
+uint8_t f_typetell(struct fatfs_cfg *p_cfg, uint8_t *fname)
 {
 	uint8_t tbuf[5];
 	uint8_t *attr = '\0';	//后缀名
@@ -83,14 +77,16 @@ uint8_t f_typetell(uint8_t *fname)
 		i++;
 		if (*fname == '\0')
 		{
-			break;				//偏移到了最后了.
+			break;			
 		}
 		fname++;
 	}
+
 	if (i == 250)
 	{
-		return 0XFF;			//错误的字符串.
+		return 0XFF;		
 	}
+
 	for (i = 0; i < 5; i++)		//得到后缀名
 	{
 		fname--;
@@ -102,7 +98,7 @@ uint8_t f_typetell(uint8_t *fname)
 		}
 	}
 
-	strcpy((char *)tbuf, (const char*)attr);		//copy
+	strcpy((char *)tbuf, (const char*)attr);		
 	for (i = 0; i < 4; i++)
 	{
 		tbuf[i] = char_upper(tbuf[i]);				//全部变为大写 
@@ -114,14 +110,19 @@ uint8_t f_typetell(uint8_t *fname)
 		{
 			if (*FILE_TYPE_TBL[i][j] == 0)
 			{
-				break;								//此组已经没有可对比的成员了.
+				break;							
 			}
-			if (strcmp((const char *)FILE_TYPE_TBL[i][j], (const char *)tbuf) == 0)		//找到了
+
+			if (strcmp((const char *)FILE_TYPE_TBL[i][j], (const char *)tbuf) == 0)		
 			{
+				p_cfg->filetype = (uint8_t*)malloc(10);
+				strcpy(p_cfg->filetype, (const char *)FILE_TYPE_TBL[i][j]);
+				
 				return (i<<4)|j;
 			}
 		}
 	}
+
 	return 0XFF;//没找到		 			   
 }	 
 
@@ -130,7 +131,7 @@ uint8_t f_typetell(uint8_t *fname)
 //total:总容量	 （单位KB）
 //free:剩余容量	 （单位KB）
 //返回值:0,正常.其他,错误代码
-uint8_t exf_getfree(uint8_t *drv, uint32_t *total, uint32_t *free)
+uint8_t exf_getfree(struct fatfs_cfg *p_cfg, uint8_t *drv)
 {
 	FATFS *fs1;
 	uint8_t res;
@@ -146,8 +147,23 @@ uint8_t exf_getfree(uint8_t *drv, uint32_t *total, uint32_t *free)
 		tot_sect *= fs1->ssize/512;
 		fre_sect *= fs1->ssize/512;
 #endif	  
-		*total = tot_sect >> 1;	//单位为KB
-		*free = fre_sect >> 1;	//单位为KB 
- 	}
+		p_cfg->total = tot_sect >> 1;	//单位为KB
+		p_cfg->free = fre_sect >> 1;	//单位为KB 
+	}
 	return res;
 }	
+
+// 退出文件系统，销毁申请的内存
+uint8_t exfuns_deinit(struct fatfs_cfg *p_cfg)
+{
+	if (p_cfg->filetype)
+	{
+		free(p_cfg->filetype);
+	}
+
+	free(p_cfg->file);
+	free(p_cfg->ftemp);
+	free(p_cfg->fatbuf);
+
+	return 0;
+}
