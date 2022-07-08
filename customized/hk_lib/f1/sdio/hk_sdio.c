@@ -1584,6 +1584,7 @@ SD_Error hk_sd_write_block(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr, uint
 	{
 		return SD_INVALID_PARAMETER;	
 	} 
+	trace_info("222\r\n");
 
 	//发送CMD13,查询卡的状态,短响应 
 	SDIO_CmdInitStructure.SDIO_Argument = (uint32_t)RCA << 16;	
