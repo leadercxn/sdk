@@ -393,6 +393,54 @@ SD_Error FindSCR(uint16_t rca, uint32_t *pscr)
 	return errorstatus;	
 }
 
+//检查卡是否正在执行写操作
+//pstatus:当前状态.
+//返回值:错误代码
+SD_Error IsCardProgramming(uint8_t *pstatus)
+{
+	uint32_t respR1 = 0, status = 0; 
+
+
+	SDIO_CmdInitStructure.SDIO_Argument = (uint32_t) RCA << 16; 	//卡相对地址参数
+	SDIO_CmdInitStructure.SDIO_CmdIndex = SD_CMD_SEND_STATUS;		//发送CMD13 	
+	SDIO_CmdInitStructure.SDIO_Response = SDIO_Response_Short;
+	SDIO_CmdInitStructure.SDIO_Wait = SDIO_Wait_No;
+	SDIO_CmdInitStructure.SDIO_CPSM = SDIO_CPSM_Enable;
+	SDIO_SendCommand(&SDIO_CmdInitStructure);	
+
+	status = SDIO->STA;
+	
+	//等待操作完成
+	while (!(status & ((1<<0)|(1<<6)|(1<<2))))
+	{
+		status = SDIO->STA;					
+	}
+	
+ 	if (SDIO_GetFlagStatus(SDIO_FLAG_CCRCFAIL) != RESET)			//CRC检测失败
+	{  
+		SDIO_ClearFlag(SDIO_FLAG_CCRCFAIL);	
+		return SD_CMD_CRC_FAIL;
+	}
+
+	if (SDIO_GetFlagStatus(SDIO_FLAG_CTIMEOUT) != RESET)			//命令超时 
+	{
+		SDIO_ClearFlag(SDIO_FLAG_CTIMEOUT);		
+		return SD_CMD_RSP_TIMEOUT;
+	}
+
+	if (SDIO->RESPCMD != SD_CMD_SEND_STATUS)
+	{
+		return SD_ILLEGAL_CMD;
+	}
+	
+	SDIO_ClearFlag(SDIO_STATIC_FLAGS);
+	
+	respR1 = SDIO->RESP1;
+	
+	*pstatus= (uint8_t)((respR1>>9)&0x0000000F);
+	return SD_OK;
+}
+
 //得到NumberOfBytes以2为底的指数.
 //NumberOfBytes:字节数.
 //返回值:以2为底的指数值
@@ -1480,7 +1528,7 @@ SD_Error hk_sd_write_block(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr, uint
 	uint32_t timeout = 0, bytestransferred = 0;
 	uint32_t cardstatus = 0, count = 0, restwords = 0;
 	uint32_t tlen = blksize;						//总长度(字节)
-	uint32_t *tempbuff = (uint32_t*)buf;								 
+	uint32_t *tempbuff = (uint32_t*)buf;	
 
 	if (buf == NULL)
 	{
@@ -1510,6 +1558,7 @@ SD_Error hk_sd_write_block(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr, uint
 		addr >>= 9;
 	}    
 
+	trace_info("111\r\n");
 	if ((blksize > 0) && (blksize <= 2048) && ((blksize & (blksize-1)) == 0))
 	{
 		power = convert_from_bytes_to_power_of_two(blksize);	
@@ -1545,12 +1594,14 @@ SD_Error hk_sd_write_block(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr, uint
 	SDIO_SendCommand(&SDIO_CmdInitStructure);	
 
 	//等待R1响应 
+	// TODO: no card status here
 	errorstatus = CmdResp1Error(SD_CMD_SEND_STATUS);		
 	
 	if (errorstatus != SD_OK)
 	{
 		return errorstatus;
 	}
+	trace_info("222\r\n");
 
 	cardstatus = SDIO->RESP1;													  
 	timeout = SD_DATATIMEOUT;
@@ -1566,7 +1617,8 @@ SD_Error hk_sd_write_block(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr, uint
 		SDIO_CmdInitStructure.SDIO_CPSM 	= SDIO_CPSM_Enable;
 		SDIO_SendCommand(&SDIO_CmdInitStructure);	
 		
-		errorstatus = CmdResp1Error(SD_CMD_SEND_STATUS);	//等待R1响应   		   
+		errorstatus = CmdResp1Error(SD_CMD_SEND_STATUS);	//等待R1响应 
+		trace_info("333\r\n");  		   
 		if (errorstatus != SD_OK)
 		{
 			return errorstatus;	
@@ -1602,6 +1654,7 @@ SD_Error hk_sd_write_block(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr, uint
 	SDIO_DataConfig(&SDIO_DataInitStructure);
 	
 	timeout = SDIO_DATATIMEOUT;
+	trace_info("xxx\r\n");
 	if (p_cfg->devicemode == SD_POLLING_MODE)
 	{
 		INTX_DISABLE();				//关闭总中断(POLLING模式,严禁中断打断SDIO读写操作!!!)
@@ -1706,12 +1759,15 @@ SD_Error hk_sd_write_block(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr, uint
 		}
 	}  
 	SDIO_ClearFlag(SDIO_STATIC_FLAGS);					//清除所有标记
+
 	errorstatus = IsCardProgramming(&cardstate);
 	while ((errorstatus==SD_OK) && ((cardstate == SD_CARD_PROGRAMMING)
 			|| (cardstate== SD_CARD_RECEIVING)))
 	{
 		errorstatus = IsCardProgramming(&cardstate);
 	}   
+
+	trace_info("errorstatus = %d\r\n", errorstatus);
 	return errorstatus;
 }
 
