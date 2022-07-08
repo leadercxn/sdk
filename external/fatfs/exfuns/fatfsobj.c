@@ -5,7 +5,7 @@
 
 uint8_t     mf_mount(fatfs_cfg_t *p_cfg, uint8_t* path, uint8_t mt)
 {
-    return f_mount(p_cfg->fs[1], (const TCHAR*)path, mt);
+    return f_mount(p_cfg->fs[0], (const TCHAR*)path, mt);
 }
 
 //打开文件夹
@@ -63,6 +63,8 @@ uint8_t     mf_read(fatfs_cfg_t *p_cfg, uint16_t len)
             }
 		}	 
 	}
+
+	p_cfg->br = tlen;		// 实际读的字节数
 
 	if (tlen)
     {
@@ -220,7 +222,7 @@ uint32_t    mf_showfree(fatfs_cfg_t *p_cfg, uint8_t *drv)
 
 uint8_t     mf_lseek(fatfs_cfg_t *p_cfg, uint32_t offset)
 {
-    return f_lseek(p_cfg->file,offset);
+    return f_lseek(p_cfg->file, offset);
 }
 
 uint32_t    mf_tell(fatfs_cfg_t *p_cfg)

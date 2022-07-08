@@ -124,7 +124,9 @@ DRESULT disk_write (
 			{
 				g_sdio_obj.sdio_ops.sd_init(&g_sdio_obj.sdio_cfg);		//重新初始化SD卡
 				res = g_sdio_obj.sdio_ops.sd_write_disk(&g_sdio_obj.sdio_cfg, (uint8_t*)buff, sector, count);	
-				//printf("sd wr error:%d\r\n",res);
+				
+// uint8_t hk_sd_write_disk(sdio_cfg_t *p_cfg, uint8_t*buf, uint32_t sector, uint8_t cnt)
+				printf("sd wr error:%d\r\n",res);
 			}
 			break;
 
