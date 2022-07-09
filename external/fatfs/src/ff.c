@@ -18,7 +18,6 @@
 
 #include "ff.h"			/* Declarations of FatFs API */
 #include "diskio.h"		/* Declarations of disk I/O functions */
-#include "trace.h"
 
 /*--------------------------------------------------------------------------
 
@@ -2769,23 +2768,18 @@ FRESULT f_sync (
 	DWORD tm;
 	BYTE *dir;
 
-	trace_info("f_sync\r\n");
 	res = validate(fp);					/* Check validity of the object */
 	
 	if (res == FR_OK) {
 		if (fp->flag & FA__WRITTEN) {	/* Has the file been written? */
 			/* Write-back dirty buffer */
 #if !_FS_TINY
-			trace_info("xxx\r\n");
 
 			if (fp->flag & FA__DIRTY) {
-				trace_info("ttt\r\n");
 				if (disk_write(fp->fs->drv, fp->buf, fp->dsect, 1) != RES_OK)
 				{
-					trace_info("ccc\r\n");
 					LEAVE_FF(fp->fs, FR_DISK_ERR);
 				}
-				trace_info("sss\r\n");
 				fp->flag &= ~FA__DIRTY;
 			}
 #endif
@@ -2824,18 +2818,13 @@ FRESULT f_close (
 {
 	FRESULT res;
 
-	trace_info("000\r\n");
 #if !_FS_READONLY
 	res = f_sync(fp);					/* Flush cached data */
-	trace_info("res = %d\r\n", res);
 	if (res == FR_OK)
 #endif
 	{
-		trace_info("111\r\n");
 		res = validate(fp);				/* Lock volume */
-		trace_info("222\r\n");
 		if (res == FR_OK) {
-			trace_info("333\r\n");
 #if _FS_REENTRANT
 			FATFS *fs = fp->fs;
 #endif
@@ -2848,7 +2837,6 @@ FRESULT f_close (
 			unlock_fs(fs, FR_OK);		/* Unlock volume */
 #endif
 		}
-		trace_info("444\r\n");
 	}
 	return res;
 }

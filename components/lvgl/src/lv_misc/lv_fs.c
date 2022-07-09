@@ -13,7 +13,6 @@
 #include "lv_ll.h"
 #include <string.h>
 #include "lv_gc.h"
-#include "trace.h"
 
 /*********************
  *      DEFINES
@@ -84,7 +83,6 @@ lv_fs_res_t lv_fs_open(lv_fs_file_t * file_p, const char * path, lv_fs_mode_t mo
 {
     file_p->drv    = NULL;
     file_p->file_d = NULL;
-    trace_info("0\r\n");
 
     if(path == NULL) return LV_FS_RES_INV_PARAM;
 
@@ -104,7 +102,6 @@ lv_fs_res_t lv_fs_open(lv_fs_file_t * file_p, const char * path, lv_fs_mode_t mo
     }
 
     if(file_p->drv->open_cb == NULL) {
-        trace_info("1\r\n");
         file_p->drv = NULL;
         return LV_FS_RES_NOT_IMP;
     }
@@ -113,7 +110,6 @@ lv_fs_res_t lv_fs_open(lv_fs_file_t * file_p, const char * path, lv_fs_mode_t mo
 
     if(file_p->drv->file_size == 0) {  /*Is file_d zero size?*/
         /*Pass file_d's address to open_cb, so the implementor can allocate memory byself*/
-        trace_info("2\r\n");
         return file_p->drv->open_cb(file_p->drv, &file_p->file_d, real_path, mode);
     }
 
@@ -125,7 +121,6 @@ lv_fs_res_t lv_fs_open(lv_fs_file_t * file_p, const char * path, lv_fs_mode_t mo
     }
 
     lv_fs_res_t res = file_p->drv->open_cb(file_p->drv, file_p->file_d, real_path, mode);
-    trace_info("3\r\n");
 
     if(res != LV_FS_RES_OK) {
         lv_mem_free(file_p->file_d);

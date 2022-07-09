@@ -33,7 +33,6 @@ DSTATUS disk_initialize (
 	switch (pdrv)
 	{
 		case SD_CARD:				//SD卡
-			// res = SD_Init();			
 			res = g_sdio_obj.sdio_ops.sd_init(&g_sdio_obj.sdio_cfg);		//SD卡初始化
 			break;
 
@@ -71,13 +70,12 @@ DRESULT disk_read (
 	switch (pdrv)
 	{
 		case SD_CARD:					//SD卡
-			// res = SD_ReadDisk(buff,sector,count);	
 			res = g_sdio_obj.sdio_ops.sd_read_disk(&g_sdio_obj.sdio_cfg, buff, sector, count);
 			while (res)					//读出错
 			{
 				g_sdio_obj.sdio_ops.sd_init(&g_sdio_obj.sdio_cfg);		//重新初始化SD卡
 				res = g_sdio_obj.sdio_ops.sd_read_disk(&g_sdio_obj.sdio_cfg, buff, sector, count);
-				//printf("sd rd error:%d\r\n",res);
+				printf("sd rd error:%d\r\n",res);
 			}
 			break;
 
@@ -118,14 +116,11 @@ DRESULT disk_write (
 	switch (pdrv)
 	{
 		case SD_CARD:		//SD卡
-			// res = SD_WriteDisk((uint8_t*)buff,sector,count);
 			res = g_sdio_obj.sdio_ops.sd_write_disk(&g_sdio_obj.sdio_cfg, (uint8_t*)buff, sector, count);
 			while (res)		//写出错
 			{
 				g_sdio_obj.sdio_ops.sd_init(&g_sdio_obj.sdio_cfg);		//重新初始化SD卡
 				res = g_sdio_obj.sdio_ops.sd_write_disk(&g_sdio_obj.sdio_cfg, (uint8_t*)buff, sector, count);	
-				
-// uint8_t hk_sd_write_disk(sdio_cfg_t *p_cfg, uint8_t*buf, uint32_t sector, uint8_t cnt)
 				printf("sd wr error:%d\r\n",res);
 			}
 			break;

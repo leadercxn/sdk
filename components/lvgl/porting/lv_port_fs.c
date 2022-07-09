@@ -165,13 +165,11 @@ static void fs_init(void)
  * @param mode read: FS_MODE_RD, write: FS_MODE_WR, both: FS_MODE_RD | FS_MODE_WR
  * @return LV_FS_RES_OK or any error from lv_fs_res_t enum
  */
-// TODO: fatfs 的mode 与 lvgl文件mode貌似不一致
 static lv_fs_res_t fs_open (lv_fs_drv_t * drv, void * file_p, const char * path, lv_fs_mode_t mode)
 {
     lv_fs_res_t res = LV_FS_RES_NOT_IMP;
     FRESULT fres;
     g_fatfs_obj.fatfs_cfg.file = file_p;
-    trace_info("1\r\n");
 
     if(mode == LV_FS_MODE_WR)
     {
@@ -235,9 +233,7 @@ static lv_fs_res_t fs_close (lv_fs_drv_t * drv, void * file_p)
     g_fatfs_obj.fatfs_cfg.file = file_p;
 
     // fres = g_fatfs_obj.fatfs_ops.f_close(&g_fatfs_obj.fatfs_cfg); 
-    trace_info("555\r\n");
     fres = f_close((FIL*)file_p);
-    trace_info("666\r\n");
     if (fres != FR_OK)
     {
         trace_info("close file error : %d\r\n", fres);

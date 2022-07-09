@@ -23,7 +23,7 @@ SD_Error CmdResp3Error(void);
 SD_Error CmdResp2Error(void);
 SD_Error CmdResp6Error(uint8_t cmd,uint16_t*prca);  
 SD_Error SDEnWideBus(uint8_t enx);	  
-SD_Error IsCardProgramming(uint8_t *pstatus); 
+SD_Error IsCardProgramming(sdio_cfg_t *p_cfg, uint8_t *pstatus);
 SD_Error FindSCR(uint16_t rca,uint32_t *pscr);
 uint8_t convert_from_bytes_to_power_of_two(uint16_t NumberOfBytes); 
 
@@ -396,12 +396,12 @@ SD_Error FindSCR(uint16_t rca, uint32_t *pscr)
 //检查卡是否正在执行写操作
 //pstatus:当前状态.
 //返回值:错误代码
-SD_Error IsCardProgramming(uint8_t *pstatus)
+SD_Error IsCardProgramming(sdio_cfg_t *p_cfg, uint8_t *pstatus)
 {
 	uint32_t respR1 = 0, status = 0; 
 
 
-	SDIO_CmdInitStructure.SDIO_Argument = (uint32_t) RCA << 16; 	//卡相对地址参数
+	SDIO_CmdInitStructure.SDIO_Argument = (uint32_t) p_cfg->cardinfo->rca << 16; 	//卡相对地址参数
 	SDIO_CmdInitStructure.SDIO_CmdIndex = SD_CMD_SEND_STATUS;		//发送CMD13 	
 	SDIO_CmdInitStructure.SDIO_Response = SDIO_Response_Short;
 	SDIO_CmdInitStructure.SDIO_Wait = SDIO_Wait_No;
@@ -1558,7 +1558,6 @@ SD_Error hk_sd_write_block(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr, uint
 		addr >>= 9;
 	}    
 
-	trace_info("111\r\n");
 	if ((blksize > 0) && (blksize <= 2048) && ((blksize & (blksize-1)) == 0))
 	{
 		power = convert_from_bytes_to_power_of_two(blksize);	
@@ -1584,10 +1583,9 @@ SD_Error hk_sd_write_block(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr, uint
 	{
 		return SD_INVALID_PARAMETER;	
 	} 
-	trace_info("222\r\n");
 
 	//发送CMD13,查询卡的状态,短响应 
-	SDIO_CmdInitStructure.SDIO_Argument = (uint32_t)RCA << 16;	
+	SDIO_CmdInitStructure.SDIO_Argument = (uint32_t)p_cfg->cardinfo->rca << 16;	
 	SDIO_CmdInitStructure.SDIO_CmdIndex = SD_CMD_SEND_STATUS;
 	SDIO_CmdInitStructure.SDIO_Response = SDIO_Response_Short;
 	SDIO_CmdInitStructure.SDIO_Wait 	= SDIO_Wait_No;
@@ -1602,7 +1600,6 @@ SD_Error hk_sd_write_block(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr, uint
 	{
 		return errorstatus;
 	}
-	trace_info("222\r\n");
 
 	cardstatus = SDIO->RESP1;													  
 	timeout = SD_DATATIMEOUT;
@@ -1611,7 +1608,7 @@ SD_Error hk_sd_write_block(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr, uint
 		timeout--;
 
 		//发送CMD13,查询卡的状态,短响应
-		SDIO_CmdInitStructure.SDIO_Argument = (uint32_t)RCA << 16;
+		SDIO_CmdInitStructure.SDIO_Argument = (uint32_t)p_cfg->cardinfo->rca << 16;
 		SDIO_CmdInitStructure.SDIO_CmdIndex = SD_CMD_SEND_STATUS;
 		SDIO_CmdInitStructure.SDIO_Response = SDIO_Response_Short;
 		SDIO_CmdInitStructure.SDIO_Wait 	= SDIO_Wait_No;
@@ -1619,7 +1616,7 @@ SD_Error hk_sd_write_block(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr, uint
 		SDIO_SendCommand(&SDIO_CmdInitStructure);	
 		
 		errorstatus = CmdResp1Error(SD_CMD_SEND_STATUS);	//等待R1响应 
-		trace_info("333\r\n");  		   
+
 		if (errorstatus != SD_OK)
 		{
 			return errorstatus;	
@@ -1655,7 +1652,6 @@ SD_Error hk_sd_write_block(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr, uint
 	SDIO_DataConfig(&SDIO_DataInitStructure);
 	
 	timeout = SDIO_DATATIMEOUT;
-	trace_info("xxx\r\n");
 	if (p_cfg->devicemode == SD_POLLING_MODE)
 	{
 		INTX_DISABLE();				//关闭总中断(POLLING模式,严禁中断打断SDIO读写操作!!!)
@@ -1761,14 +1757,13 @@ SD_Error hk_sd_write_block(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr, uint
 	}  
 	SDIO_ClearFlag(SDIO_STATIC_FLAGS);					//清除所有标记
 
-	errorstatus = IsCardProgramming(&cardstate);
+	errorstatus = IsCardProgramming(p_cfg, &cardstate);
 	while ((errorstatus==SD_OK) && ((cardstate == SD_CARD_PROGRAMMING)
 			|| (cardstate== SD_CARD_RECEIVING)))
 	{
-		errorstatus = IsCardProgramming(&cardstate);
+		errorstatus = IsCardProgramming(p_cfg, &cardstate);
 	}   
 
-	trace_info("errorstatus = %d\r\n", errorstatus);
 	return errorstatus;
 }
 
@@ -1850,7 +1845,7 @@ SD_Error hk_sd_write_multi_blocks(sdio_cfg_t *p_cfg, uint8_t *buf, long long add
 			|| (SDIO_HIGH_CAPACITY_SD_CARD == p_cfg->cardinfo->cardtype))
 		{
 			//提高性能，发送ACMD55,短响应
-			SDIO_CmdInitStructure.SDIO_Argument = (uint32_t)RCA<<16;		
+			SDIO_CmdInitStructure.SDIO_Argument = (uint32_t)p_cfg->cardinfo->rca<<16;		
 			SDIO_CmdInitStructure.SDIO_CmdIndex = SD_CMD_APP_CMD;
 			SDIO_CmdInitStructure.SDIO_Response = SDIO_Response_Short;
 			SDIO_CmdInitStructure.SDIO_Wait 	= SDIO_Wait_No;
@@ -2035,11 +2030,11 @@ SD_Error hk_sd_write_multi_blocks(sdio_cfg_t *p_cfg, uint8_t *buf, long long add
 
 	SDIO_ClearFlag(SDIO_STATIC_FLAGS);//清除所有标记
 
-	errorstatus = IsCardProgramming(&cardstate);
+	errorstatus = IsCardProgramming(p_cfg, &cardstate);
 	while ((errorstatus == SD_OK) && ((cardstate == SD_CARD_PROGRAMMING)
 			|| (cardstate == SD_CARD_RECEIVING)))
 	{
-		errorstatus = IsCardProgramming(&cardstate);
+		errorstatus = IsCardProgramming(p_cfg, &cardstate);
 	}   
 	return errorstatus;	   
 }
