@@ -21,7 +21,6 @@
  *********************/
 extern systick_object_t g_systick_obj;
 extern sdio_obj_t g_sdio_obj;
-extern fatfs_object_t g_fatfs_obj;
 
 /**********************
  *      TYPEDEFS
@@ -129,6 +128,7 @@ static void fs_init(void)
     /*You code here*/
     uint8_t res = 1;
     FRESULT fres;
+    static FATFS fs;
 
     while (g_sdio_obj.sdio_ops.sd_init(&g_sdio_obj.sdio_cfg))
 	{
@@ -136,20 +136,8 @@ static void fs_init(void)
 		trace_info("sd init fail...\r\n");
 	}
 
-    fres = g_fatfs_obj.fatfs_cfg.f_init(&g_fatfs_obj.fatfs_cfg);
-    if (fres == FR_OK)
-    {
-        trace_info("fatfs init successful\r\n");
-    }
-    else 
-    {
-        trace_info("fatfs init fail\r\n");
-        return ;
-    }
-
-	// fres = g_fatfs_obj.fatfs_ops.f_mount(&g_fatfs_obj.fatfs_cfg, "0:", 1); 					//挂载SD卡 
-	
-    while (fres = g_fatfs_obj.fatfs_ops.f_mount(&g_fatfs_obj.fatfs_cfg, "0:", 1))
+	trace_info("fatfs init...\r\n");
+    while (fres = f_mount(&fs, "0:", 1))       //挂载SD卡 
 	{
 		g_systick_obj.systick_ops.delay_ms(1000);
 		trace_info("mount sd error %d\r\n", fres);
@@ -169,12 +157,10 @@ static lv_fs_res_t fs_open (lv_fs_drv_t * drv, void * file_p, const char * path,
 {
     lv_fs_res_t res = LV_FS_RES_NOT_IMP;
     FRESULT fres;
-    g_fatfs_obj.fatfs_cfg.file = file_p;
 
     if(mode == LV_FS_MODE_WR)
     {
         /*Open a file for write*/
-        // fres = g_fatfs_obj.fatfs_ops.f_open(&g_fatfs_obj.fatfs_cfg, path, LV_FS_MODE_WR); 
         fres = f_open((FIL*)file_p, path, LV_FS_MODE_WR);
         if (fres != FR_OK)
         {
@@ -188,7 +174,6 @@ static lv_fs_res_t fs_open (lv_fs_drv_t * drv, void * file_p, const char * path,
     else if(mode == LV_FS_MODE_RD)
     {
         /*Open a file for read*/
-        // fres = g_fatfs_obj.fatfs_ops.f_open(&g_fatfs_obj.fatfs_cfg, path, LV_FS_MODE_RD); 
         fres = f_open((FIL*)file_p, path, LV_FS_MODE_RD);
         if (fres != FR_OK)
         {
@@ -202,7 +187,6 @@ static lv_fs_res_t fs_open (lv_fs_drv_t * drv, void * file_p, const char * path,
     else if(mode == (LV_FS_MODE_WR | LV_FS_MODE_RD))
     {
         /*Open a file for read and write*/
-        // fres = g_fatfs_obj.fatfs_ops.f_open(&g_fatfs_obj.fatfs_cfg, path, (LV_FS_MODE_WR | LV_FS_MODE_RD)); 
         fres = f_open((FIL*)file_p, path, (LV_FS_MODE_WR | LV_FS_MODE_RD));
         if (fres != FR_OK)
         {
@@ -230,9 +214,7 @@ static lv_fs_res_t fs_close (lv_fs_drv_t * drv, void * file_p)
 
     /* Add your code here*/
     FRESULT fres;
-    g_fatfs_obj.fatfs_cfg.file = file_p;
 
-    // fres = g_fatfs_obj.fatfs_ops.f_close(&g_fatfs_obj.fatfs_cfg); 
     fres = f_close((FIL*)file_p);
     if (fres != FR_OK)
     {
@@ -263,9 +245,8 @@ static lv_fs_res_t fs_read (lv_fs_drv_t * drv, void * file_p, void * buf, uint32
 
     /* Add your code here*/
     FRESULT fres;
-    g_fatfs_obj.fatfs_cfg.file = file_p;
 
-    fres = g_fatfs_obj.fatfs_ops.f_read(&g_fatfs_obj.fatfs_cfg, btr); 
+    fres = f_read((FIL*)file_p, buf, btr, br);
     if (fres != FR_OK)
     {
         trace_info("read file error : %d\r\n", fres);
@@ -274,9 +255,6 @@ static lv_fs_res_t fs_read (lv_fs_drv_t * drv, void * file_p, void * buf, uint32
     {
         res = LV_FS_RES_OK;
     }
-
-    buf = g_fatfs_obj.fatfs_cfg.fatbuf;
-    *br = g_fatfs_obj.fatfs_cfg.br;
 
     return res;
 }
@@ -296,9 +274,7 @@ static lv_fs_res_t fs_write(lv_fs_drv_t * drv, void * file_p, const void * buf, 
 
     /* Add your code here*/
     FRESULT fres;
-    g_fatfs_obj.fatfs_cfg.file = file_p;
 
-    // fres = g_fatfs_obj.fatfs_ops.f_write(&g_fatfs_obj.fatfs_cfg, buf, btw); 
     fres = f_write((FIL*)file_p, buf, btw, bw);
     if (fres != FR_OK)
     {
@@ -308,8 +284,6 @@ static lv_fs_res_t fs_write(lv_fs_drv_t * drv, void * file_p, const void * buf, 
     {
         res = LV_FS_RES_OK;
     }
-
-    // *bw = g_fatfs_obj.fatfs_cfg.bw;
 
     return res;
 }
@@ -328,9 +302,8 @@ static lv_fs_res_t fs_seek (lv_fs_drv_t * drv, void * file_p, uint32_t pos)
 
     /* Add your code here*/
     FRESULT fres;
-    g_fatfs_obj.fatfs_cfg.file = file_p;
 
-    fres = g_fatfs_obj.fatfs_ops.f_lseek(&g_fatfs_obj.fatfs_cfg, pos); 
+    fres = f_lseek((FIL*)file_p, pos);
     if (fres != FR_OK)
     {
         trace_info("file seek error : %d\r\n", fres);
@@ -371,6 +344,9 @@ static lv_fs_res_t fs_tell (lv_fs_drv_t * drv, void * file_p, uint32_t * pos_p)
     lv_fs_res_t res = LV_FS_RES_NOT_IMP;
 
     /* Add your code here*/
+    FRESULT fres;
+
+    *pos_p = (uint32_t *)f_tell((FIL*)file_p);
 
     return res;
 }
