@@ -137,7 +137,7 @@ static void fs_init(void)
 	}
 
 	trace_info("fatfs init...\r\n");
-    while (fres = f_mount(&fs, "0:", 1))       //挂载SD卡 
+    while (fres = f_mount(&fs, "", 0))       //挂载SD卡 
 	{
 		g_systick_obj.systick_ops.delay_ms(1000);
 		trace_info("mount sd error %d\r\n", fres);

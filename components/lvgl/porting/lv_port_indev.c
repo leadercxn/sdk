@@ -202,7 +202,7 @@ static bool touchpad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
     /*Save the pressed coordinates and the state*/
     if (tp_dev.sta & TP_PRES_DOWN)
     {
-        trace_info("(%d, %d)\r\n", tp_dev.x[0], tp_dev.y[0]);
+        // trace_info("(%d, %d)\r\n", tp_dev.x[0], tp_dev.y[0]);
 
         last_x = tp_dev.x[0];
         last_y = tp_dev.y[0];

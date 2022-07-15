@@ -12,6 +12,7 @@
 #include "../lv_misc/lv_debug.h"
 #include "../lv_hal/lv_hal_tick.h"
 #include "lv_gc.h"
+#include "trace.h"
 
 /*********************
  *      DEFINES
