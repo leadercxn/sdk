@@ -18,7 +18,7 @@
 
 #include "ff.h"			/* Declarations of FatFs API */
 #include "diskio.h"		/* Declarations of disk I/O functions */
-
+#include "trace.h"
 /*--------------------------------------------------------------------------
 
    Module Private Definitions
@@ -2549,23 +2549,30 @@ FRESULT f_read (
 	UINT rcnt, cc;
 	BYTE csect, *rbuff = (BYTE*)buff;
 
-
+	trace_info("btr = %d\r\n", btr);
 	*br = 0;	/* Clear read byte counter */
 
 	res = validate(fp);							/* Check validity */
+	trace_info("1\r\n");
 	if (res != FR_OK) LEAVE_FF(fp->fs, res);
 	if (fp->err)								/* Check error */
 		LEAVE_FF(fp->fs, (FRESULT)fp->err);
+		trace_info("1\r\n");
 	if (!(fp->flag & FA_READ)) 					/* Check access mode */
 		LEAVE_FF(fp->fs, FR_DENIED);
+		trace_info("1\r\n");
 	remain = fp->fsize - fp->fptr;
 	if (btr > remain) btr = (UINT)remain;		/* Truncate btr by remaining bytes */
 
+	trace_info("btr = %d\r\n", btr);
 	for ( ;  btr;								/* Repeat until all data read */
 		rbuff += rcnt, fp->fptr += rcnt, *br += rcnt, btr -= rcnt) {
+		trace_info("1\r\n");
 		if ((fp->fptr % SS(fp->fs)) == 0) {		/* On the sector boundary? */
+			trace_info("1\r\n");
 			csect = (BYTE)(fp->fptr / SS(fp->fs) & (fp->fs->csize - 1));	/* Sector offset in the cluster */
 			if (!csect) {						/* On the cluster boundary? */
+				trace_info("1\r\n");
 				if (fp->fptr == 0) {			/* On the top of the file? */
 					clst = fp->sclust;			/* Follow from the origin */
 				} else {						/* Middle or end of the file */
@@ -2576,14 +2583,17 @@ FRESULT f_read (
 #endif
 						clst = get_fat(fp->fs, fp->clust);	/* Follow cluster chain on the FAT */
 				}
+				trace_info("1\r\n");
 				if (clst < 2) ABORT(fp->fs, FR_INT_ERR);
 				if (clst == 0xFFFFFFFF) ABORT(fp->fs, FR_DISK_ERR);
 				fp->clust = clst;				/* Update current cluster */
 			}
+			trace_info("1\r\n");
 			sect = clust2sect(fp->fs, fp->clust);	/* Get current sector */
 			if (!sect) ABORT(fp->fs, FR_INT_ERR);
 			sect += csect;
 			cc = btr / SS(fp->fs);				/* When remaining bytes >= sector size, */
+			trace_info("1 cc = %d\r\n", cc);
 			if (cc) {							/* Read maximum contiguous sectors directly */
 				if (csect + cc > fp->fs->csize)	/* Clip at cluster boundary */
 					cc = fp->fs->csize - csect;

@@ -71,6 +71,7 @@ DRESULT disk_read (
 	{
 		case SD_CARD:					//SD卡
 			res = g_sdio_obj.sdio_ops.sd_read_disk(&g_sdio_obj.sdio_cfg, buff, sector, count);
+			// printf("sd rd sector = %d, count = %d\r\n", sector, count);
 			while (res)					//读出错
 			{
 				g_sdio_obj.sdio_ops.sd_init(&g_sdio_obj.sdio_cfg);		//重新初始化SD卡

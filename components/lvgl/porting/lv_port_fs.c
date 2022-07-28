@@ -10,7 +10,6 @@
  *      INCLUDES
  *********************/
 #include "lv_port_fs.h"
-#include "fatfsobj.h"
 #include "sdio.h"
 #include "systick.h"
 #include "trace.h"
@@ -47,6 +46,7 @@ typedef struct {
  *  STATIC PROTOTYPES
  **********************/
 static void fs_init(void);
+
 static lv_fs_res_t fs_open (lv_fs_drv_t * drv, void * file_p, const char * path, lv_fs_mode_t mode);
 static lv_fs_res_t fs_close (lv_fs_drv_t * drv, void * file_p);
 static lv_fs_res_t fs_read (lv_fs_drv_t * drv, void * file_p, void * buf, uint32_t btr, uint32_t * br);
@@ -95,7 +95,7 @@ void lv_port_fs_init(void)
 
     /*Set up fields...*/
     fs_drv.file_size = sizeof(file_t);
-    fs_drv.letter = 'P';
+    fs_drv.letter = '0';
     fs_drv.open_cb = fs_open;
     fs_drv.close_cb = fs_close;
     fs_drv.read_cb = fs_read;
@@ -131,17 +131,19 @@ static void fs_init(void)
     static FATFS fs;
 
     while (g_sdio_obj.sdio_ops.sd_init(&g_sdio_obj.sdio_cfg))
-	{
-		g_systick_obj.systick_ops.delay_ms(1000);
-		trace_info("sd init fail...\r\n");
-	}
+    {
+        g_systick_obj.systick_ops.delay_ms(1000);
+        trace_info("sd init fail...\r\n");
+    }
+    trace_info("sd init ok...\r\n");
 
-	trace_info("fatfs init...\r\n");
-    while (fres = f_mount(&fs, "", 0))       //挂载SD卡 
-	{
-		g_systick_obj.systick_ops.delay_ms(1000);
-		trace_info("mount sd error %d\r\n", fres);
-	}
+    fres = f_mount(&fs, "0:", 1);
+    while (fres)
+    {
+        g_systick_obj.systick_ops.delay_ms(1000);
+        trace_info("mount sd error: %d\r\n", fres);
+        fres = f_mount(&fs, "0:", 1);
+    }
     trace_info("mount sd successful\r\n");
 }
 
@@ -161,7 +163,7 @@ static lv_fs_res_t fs_open (lv_fs_drv_t * drv, void * file_p, const char * path,
     if(mode == LV_FS_MODE_WR)
     {
         /*Open a file for write*/
-        fres = f_open((FIL*)file_p, path, LV_FS_MODE_WR);
+        fres = f_open((FIL*)file_p, path, FA_WRITE);
         if (fres != FR_OK)
         {
             trace_info("open file %s error : %d\r\n", path, fres);
@@ -174,7 +176,7 @@ static lv_fs_res_t fs_open (lv_fs_drv_t * drv, void * file_p, const char * path,
     else if(mode == LV_FS_MODE_RD)
     {
         /*Open a file for read*/
-        fres = f_open((FIL*)file_p, path, LV_FS_MODE_RD);
+        fres = f_open((FIL*)file_p, path, FA_READ);
         if (fres != FR_OK)
         {
             trace_info("open file %s error : %d\r\n", path, fres);
@@ -187,7 +189,7 @@ static lv_fs_res_t fs_open (lv_fs_drv_t * drv, void * file_p, const char * path,
     else if(mode == (LV_FS_MODE_WR | LV_FS_MODE_RD))
     {
         /*Open a file for read and write*/
-        fres = f_open((FIL*)file_p, path, (LV_FS_MODE_WR | LV_FS_MODE_RD));
+        fres = f_open((FIL*)file_p, path, (FA_WRITE | FA_READ));
         if (fres != FR_OK)
         {
             trace_info("open file %s error : %d\r\n", path, fres);
@@ -224,7 +226,6 @@ static lv_fs_res_t fs_close (lv_fs_drv_t * drv, void * file_p)
     {
         res = LV_FS_RES_OK;
     }
-    
 
     return res;
 }
@@ -301,17 +302,6 @@ static lv_fs_res_t fs_seek (lv_fs_drv_t * drv, void * file_p, uint32_t pos)
     lv_fs_res_t res = LV_FS_RES_NOT_IMP;
 
     /* Add your code here*/
-    FRESULT fres;
-
-    fres = f_lseek((FIL*)file_p, pos);
-    if (fres != FR_OK)
-    {
-        trace_info("file seek error : %d\r\n", fres);
-    }
-    else
-    {
-        res = LV_FS_RES_OK;
-    }
 
     return res;
 }
@@ -344,9 +334,6 @@ static lv_fs_res_t fs_tell (lv_fs_drv_t * drv, void * file_p, uint32_t * pos_p)
     lv_fs_res_t res = LV_FS_RES_NOT_IMP;
 
     /* Add your code here*/
-    FRESULT fres;
-
-    *pos_p = (uint32_t *)f_tell((FIL*)file_p);
 
     return res;
 }
