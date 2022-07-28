@@ -84,11 +84,12 @@ lv_fs_res_t lv_fs_open(lv_fs_file_t * file_p, const char * path, lv_fs_mode_t mo
 {
     file_p->drv    = NULL;
     file_p->file_d = NULL;
-
+    trace_info("open_cb = 0x%x\r\n", &file_p->drv->open_cb);
     if(path == NULL) return LV_FS_RES_INV_PARAM;
 
     char letter = path[0];
 
+    trace_info("letter = %d\r\n",    file_p->drv->letter);
     file_p->drv = lv_fs_get_drv(letter);
     trace_info("letter = %c\r\n", file_p->drv->letter);
 
@@ -96,20 +97,27 @@ lv_fs_res_t lv_fs_open(lv_fs_file_t * file_p, const char * path, lv_fs_mode_t mo
         return LV_FS_RES_NOT_EX;
     }
 
+    trace_info("letter = %c\r\n",    file_p->drv->letter);
+    trace_info("letter = %d\r\n",    file_p->drv->letter);
     if(file_p->drv->ready_cb != NULL) {
         if(file_p->drv->ready_cb(file_p->drv) == false) {
             file_p->drv = NULL;
             return LV_FS_RES_HW_ERR;
         }
     }
+    else
+    {
+        trace_info("ready_cb is empty.\r\n");
+    }
 
     if(file_p->drv->open_cb == NULL) {
         file_p->drv = NULL;
+        trace_info("open_cb = 0x%x\r\n", (uint32_t)file_p->drv->open_cb);
         return LV_FS_RES_NOT_IMP;
     }
 
     const char * real_path = lv_fs_get_real_path(path);
-
+    trace_info("real path = %s\r\n", real_path);
     if(file_p->drv->file_size == 0) {  /*Is file_d zero size?*/
         /*Pass file_d's address to open_cb, so the implementor can allocate memory byself*/
         return file_p->drv->open_cb(file_p->drv, &file_p->file_d, real_path, mode);
@@ -122,8 +130,17 @@ lv_fs_res_t lv_fs_open(lv_fs_file_t * file_p, const char * path, lv_fs_mode_t mo
         return LV_FS_RES_OUT_OF_MEM; /* Out of memory */
     }
 
+<<<<<<< HEAD
     trace_info("drv = 0x%x\r\n", &file_p->drv);
     trace_info("open cb = 0x%x\r\n", &file_p->drv->open_cb);
+=======
+    trace_info("open_cb = 0x%x\r\n", &file_p->drv);
+    trace_info("open_cb = 0x%x\r\n", &file_p->drv->letter);
+    trace_info("letter = %d\r\n",    file_p->drv->letter);
+    trace_info("open_cb = 0x%x\r\n", &file_p->drv->rddir_size);
+    trace_info("open_cb = 0x%x\r\n", &file_p->drv->ready_cb);
+    trace_info("open_cb = 0x%x\r\n", &file_p->drv->open_cb);
+>>>>>>> 1913ee5059dc43af4fd9fabf6b87012b8685cba2
     lv_fs_res_t res = file_p->drv->open_cb(file_p->drv, file_p->file_d, real_path, mode);
 
     if(res != LV_FS_RES_OK) {

@@ -62,6 +62,8 @@ static lv_fs_res_t fs_dir_open (lv_fs_drv_t * drv, void * rddir_p, const char *p
 static lv_fs_res_t fs_dir_read (lv_fs_drv_t * drv, void * rddir_p, char *fn);
 static lv_fs_res_t fs_dir_close (lv_fs_drv_t * drv, void * rddir_p);
 
+static FATFS fs;
+
 /**********************
  *  STATIC VARIABLES
  **********************/
@@ -109,9 +111,9 @@ void lv_port_fs_init(void)
     fs_drv.trunc_cb = fs_trunc;
 
     fs_drv.rddir_size = sizeof(dir_t);
-    fs_drv.dir_close_cb = fs_dir_close;
-    fs_drv.dir_open_cb = fs_dir_open;
-    fs_drv.dir_read_cb = fs_dir_read;
+    // fs_drv.dir_close_cb = fs_dir_close;
+    // fs_drv.dir_open_cb = fs_dir_open;
+    // fs_drv.dir_read_cb = fs_dir_read;
 
     lv_fs_drv_register(&fs_drv);
 }
@@ -128,7 +130,6 @@ static void fs_init(void)
     /*You code here*/
     uint8_t res = 1;
     FRESULT fres;
-    static FATFS fs;
 
     while (g_sdio_obj.sdio_ops.sd_init(&g_sdio_obj.sdio_cfg))
     {
@@ -159,6 +160,7 @@ static lv_fs_res_t fs_open (lv_fs_drv_t * drv, void * file_p, const char * path,
 {
     lv_fs_res_t res = LV_FS_RES_NOT_IMP;
     FRESULT fres;
+    trace_info("1\r\n");
 
     if(mode == LV_FS_MODE_WR)
     {
@@ -428,7 +430,7 @@ static lv_fs_res_t fs_dir_open (lv_fs_drv_t * drv, void * rddir_p, const char *p
  */
 static lv_fs_res_t fs_dir_read (lv_fs_drv_t * drv, void * rddir_p, char *fn)
 {
-    lv_fs_res_t res = LV_FS_RES_NOT_IMP;
+    lv_fs_res_t res = LV_FS_RES_OK;
 
     /* Add your code here*/
 
@@ -443,7 +445,7 @@ static lv_fs_res_t fs_dir_read (lv_fs_drv_t * drv, void * rddir_p, char *fn)
  */
 static lv_fs_res_t fs_dir_close (lv_fs_drv_t * drv, void * rddir_p)
 {
-    lv_fs_res_t res = LV_FS_RES_NOT_IMP;
+    lv_fs_res_t res = LV_FS_RES_OK;
 
     /* Add your code here*/
 
