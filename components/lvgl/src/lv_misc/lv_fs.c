@@ -89,7 +89,7 @@ lv_fs_res_t lv_fs_open(lv_fs_file_t * file_p, const char * path, lv_fs_mode_t mo
 
     char letter = path[0];
 
-    trace_info("letter = %d\r\n",    file_p->drv->letter);
+    trace_info("letter = %c\r\n",    file_p->drv->letter);
     file_p->drv = lv_fs_get_drv(letter);
     trace_info("letter = %c\r\n", file_p->drv->letter);
 
@@ -97,8 +97,8 @@ lv_fs_res_t lv_fs_open(lv_fs_file_t * file_p, const char * path, lv_fs_mode_t mo
         return LV_FS_RES_NOT_EX;
     }
 
-    trace_info("letter = %c\r\n",    file_p->drv->letter);
-    trace_info("letter = %d\r\n",    file_p->drv->letter);
+    trace_info("letter value[c] = %c\r\n",    file_p->drv->letter);
+    trace_info("letter value[d] = %d\r\n",    file_p->drv->letter);
     if(file_p->drv->ready_cb != NULL) {
         if(file_p->drv->ready_cb(file_p->drv) == false) {
             file_p->drv = NULL;
@@ -123,6 +123,8 @@ lv_fs_res_t lv_fs_open(lv_fs_file_t * file_p, const char * path, lv_fs_mode_t mo
         return file_p->drv->open_cb(file_p->drv, &file_p->file_d, real_path, mode);
     }
 
+    trace_info("letter value[c] = %c\r\n",    file_p->drv->letter);
+    trace_info("letter value[d] = %d\r\n",    file_p->drv->letter);
     file_p->file_d = lv_mem_alloc(file_p->drv->file_size);
     LV_ASSERT_MEM(file_p->file_d);
     if(file_p->file_d == NULL) {
@@ -130,14 +132,13 @@ lv_fs_res_t lv_fs_open(lv_fs_file_t * file_p, const char * path, lv_fs_mode_t mo
         return LV_FS_RES_OUT_OF_MEM; /* Out of memory */
     }
 
-    trace_info("drv = 0x%x\r\n", &file_p->drv);
-    trace_info("open cb = 0x%x\r\n", &file_p->drv->open_cb);
-    trace_info("open_cb = 0x%x\r\n", &file_p->drv);
-    trace_info("open_cb = 0x%x\r\n", &file_p->drv->letter);
-    trace_info("letter = %d\r\n",    file_p->drv->letter);
-    trace_info("open_cb = 0x%x\r\n", &file_p->drv->rddir_size);
-    trace_info("open_cb = 0x%x\r\n", &file_p->drv->ready_cb);
-    trace_info("open_cb = 0x%x\r\n", &file_p->drv->open_cb);
+    trace_info("addr_drv = 0x%x\r\n", &file_p->drv);
+    trace_info("addr_open cb = 0x%x\r\n", &file_p->drv->open_cb);
+    trace_info("addr_letter = 0x%x\r\n", &file_p->drv->letter);
+    trace_info("letter value[c] = %c\r\n",    file_p->drv->letter);
+    trace_info("letter value[d] = %d\r\n",    file_p->drv->letter);
+    trace_info("addr_open cb = 0x%x\r\n", &file_p->drv->rddir_size);
+    trace_info("addr_ready cb = 0x%x\r\n", &file_p->drv->ready_cb);
     lv_fs_res_t res = file_p->drv->open_cb(file_p->drv, file_p->file_d, real_path, mode);
 
     if(res != LV_FS_RES_OK) {
