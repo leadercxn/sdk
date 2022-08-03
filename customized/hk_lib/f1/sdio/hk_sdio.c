@@ -2051,6 +2051,7 @@ uint8_t hk_sd_read_disk(sdio_cfg_t *p_cfg, uint8_t *buf, uint32_t sector, uint8_
 	long long lsector = sector;
 	uint8_t n;
 
+	trace_info("disk read. cnt = %d\r\n", cnt);
 	lsector <<= 9;
 	if ((uint32_t)buf % 4 != 0)
 	{

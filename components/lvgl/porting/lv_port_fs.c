@@ -96,7 +96,8 @@ void lv_port_fs_init(void)
     lv_fs_drv_init(&fs_drv);
 
     /*Set up fields...*/
-    fs_drv.file_size = sizeof(file_t);
+    // fs_drv.file_size = sizeof(file_t);
+    fs_drv.file_size = sizeof(FIL);
     fs_drv.letter = '0';
     fs_drv.open_cb = fs_open;
     fs_drv.close_cb = fs_close;
@@ -110,10 +111,10 @@ void lv_port_fs_init(void)
     fs_drv.rename_cb = fs_rename;
     fs_drv.trunc_cb = fs_trunc;
 
-    fs_drv.rddir_size = sizeof(dir_t);
-    // fs_drv.dir_close_cb = fs_dir_close;
-    // fs_drv.dir_open_cb = fs_dir_open;
-    // fs_drv.dir_read_cb = fs_dir_read;
+    fs_drv.rddir_size = sizeof(DIR);
+    fs_drv.dir_close_cb = fs_dir_close;
+    fs_drv.dir_open_cb = fs_dir_open;
+    fs_drv.dir_read_cb = fs_dir_read;
 
     lv_fs_drv_register(&fs_drv);
 }
@@ -130,7 +131,7 @@ static void fs_init(void)
     /*You code here*/
     uint8_t res = 1;
     FRESULT fres;
-
+    trace_info("size of FIL = %d\r\n", sizeof(FIL));
     while (g_sdio_obj.sdio_ops.sd_init(&g_sdio_obj.sdio_cfg))
     {
         g_systick_obj.systick_ops.delay_ms(1000);
@@ -250,12 +251,14 @@ static lv_fs_res_t fs_read (lv_fs_drv_t * drv, void * file_p, void * buf, uint32
     FRESULT fres;
 
     fres = f_read((FIL*)file_p, buf, btr, br);
+    trace_info("temp buf = %s\r\n", buf);
     if (fres != FR_OK)
     {
         trace_info("read file error : %d\r\n", fres);
     }
     else
     {
+        trace_info("read ok...\r\n");
         res = LV_FS_RES_OK;
     }
 
@@ -304,7 +307,17 @@ static lv_fs_res_t fs_seek (lv_fs_drv_t * drv, void * file_p, uint32_t pos)
     lv_fs_res_t res = LV_FS_RES_NOT_IMP;
 
     /* Add your code here*/
-
+    FRESULT fres;
+    trace_info("seek here\r\n");
+    res = f_lseek((FIL*)file_p, pos);
+    if (fres != FR_OK)
+    {
+        trace_info("file seek error : %d\r\n", fres);
+    }
+    else
+    {
+        res = LV_FS_RES_OK;
+    }
     return res;
 }
 

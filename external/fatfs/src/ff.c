@@ -693,6 +693,7 @@ FRESULT move_window (
 		res = sync_window(fs);		/* Write-back changes */
 #endif
 		if (res == FR_OK) {			/* Fill sector window with new data */
+			trace_info("read here\r\n");
 			if (disk_read(fs->drv, fs->win, sector, 1) != RES_OK) {
 				sector = 0xFFFFFFFF;	/* Invalidate window if data is not reliable */
 				res = FR_DISK_ERR;
@@ -2612,6 +2613,8 @@ FRESULT f_read (
 				continue;
 			}
 #if !_FS_TINY
+			trace_info("fp->dsect = %d, sect = %d\r\n", fp->dsect, sect);
+			trace_info("fp->flag = 0x%x\r\n", fp->flag);
 			if (fp->dsect != sect) {			/* Load data sector if not in cache */
 #if !_FS_READONLY
 				if (fp->flag & FA__DIRTY) {		/* Write-back dirty sector cache */

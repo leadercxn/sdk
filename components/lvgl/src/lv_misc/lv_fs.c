@@ -123,6 +123,7 @@ lv_fs_res_t lv_fs_open(lv_fs_file_t * file_p, const char * path, lv_fs_mode_t mo
         return file_p->drv->open_cb(file_p->drv, &file_p->file_d, real_path, mode);
     }
 
+    trace_info("file size = %d\r\n", file_p->drv->file_size);
     trace_info("letter value[c] = %c\r\n",    file_p->drv->letter);
     trace_info("letter value[d] = %d\r\n",    file_p->drv->letter);
     file_p->file_d = lv_mem_alloc(file_p->drv->file_size);
