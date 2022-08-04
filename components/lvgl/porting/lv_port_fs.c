@@ -98,7 +98,7 @@ void lv_port_fs_init(void)
     /*Set up fields...*/
     // fs_drv.file_size = sizeof(file_t);
     fs_drv.file_size = sizeof(FIL);
-    fs_drv.letter = '0';
+    fs_drv.letter = 'S';
     fs_drv.open_cb = fs_open;
     fs_drv.close_cb = fs_close;
     fs_drv.read_cb = fs_read;
@@ -131,7 +131,6 @@ static void fs_init(void)
     /*You code here*/
     uint8_t res = 1;
     FRESULT fres;
-    trace_info("size of FIL = %d\r\n", sizeof(FIL));
     while (g_sdio_obj.sdio_ops.sd_init(&g_sdio_obj.sdio_cfg))
     {
         g_systick_obj.systick_ops.delay_ms(1000);
@@ -161,48 +160,47 @@ static lv_fs_res_t fs_open (lv_fs_drv_t * drv, void * file_p, const char * path,
 {
     lv_fs_res_t res = LV_FS_RES_NOT_IMP;
     FRESULT fres;
-    trace_info("1\r\n");
+    uint8_t fs_mode;
+    TCHAR *real_path;
 
-    if(mode == LV_FS_MODE_WR)
+    if (mode == LV_FS_MODE_WR)
     {
-        /*Open a file for write*/
-        fres = f_open((FIL*)file_p, path, FA_WRITE);
-        if (fres != FR_OK)
-        {
-            trace_info("open file %s error : %d\r\n", path, fres);
-        }
-        else
-        {
-            res = LV_FS_RES_OK;
-        }
+        fs_mode = FA_WRITE | FA_CREATE_ALWAYS;
     }
-    else if(mode == LV_FS_MODE_RD)
+    else if (mode == LV_FS_MODE_RD)
     {
-        /*Open a file for read*/
-        fres = f_open((FIL*)file_p, path, FA_READ);
-        if (fres != FR_OK)
-        {
-            trace_info("open file %s error : %d\r\n", path, fres);
-        }
-        else
-        {
-            res = LV_FS_RES_OK;
-        }
+        fs_mode = FA_READ;
     }
-    else if(mode == (LV_FS_MODE_WR | LV_FS_MODE_RD))
+    else if (mode == (LV_FS_MODE_WR | LV_FS_MODE_RD))
     {
-        /*Open a file for read and write*/
-        fres = f_open((FIL*)file_p, path, (FA_WRITE | FA_READ));
-        if (fres != FR_OK)
-        {
-            trace_info("open file %s error : %d\r\n", path, fres);
-        }
-        else
-        {
-            res = LV_FS_RES_OK;
-        }
+        fs_mode = FA_READ | FA_WRITE | FA_CREATE_ALWAYS;
     }
 
+    real_path = (TCHAR *)lv_mem_alloc(sizeof(TCHAR)*strlen(path) + 4);
+
+    if (drv->letter != 'S')
+    {
+        lv_mem_free(real_path);
+        trace_info("can not find the Driver:S\r\n");
+        res = LV_FS_RES_NOT_EX;
+    }
+    else
+    {
+        snprintf(real_path, (sizeof(TCHAR)*strlen(path) + 4), "0:/%s", path);
+        trace_info("real path = %s\r\n", real_path);
+
+        fres = f_open((FIL *)file_p, real_path, fs_mode);
+        if (fres != FR_OK)
+        {
+            trace_info("open file %s error : %d\r\n", real_path, fres);
+            res = LV_FS_RES_FS_ERR;
+        }
+        else
+        {
+            res = LV_FS_RES_OK;
+        }
+        lv_mem_free(real_path);
+    }
     return res;
 }
 
@@ -251,7 +249,6 @@ static lv_fs_res_t fs_read (lv_fs_drv_t * drv, void * file_p, void * buf, uint32
     FRESULT fres;
 
     fres = f_read((FIL*)file_p, buf, btr, br);
-    trace_info("temp buf = %s\r\n", buf);
     if (fres != FR_OK)
     {
         trace_info("read file error : %d\r\n", fres);
@@ -308,7 +305,6 @@ static lv_fs_res_t fs_seek (lv_fs_drv_t * drv, void * file_p, uint32_t pos)
 
     /* Add your code here*/
     FRESULT fres;
-    trace_info("seek here\r\n");
     res = f_lseek((FIL*)file_p, pos);
     if (fres != FR_OK)
     {
