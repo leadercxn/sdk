@@ -101,6 +101,7 @@ void lv_port_disp_init(void)
     /*Set up the functions to access to your display*/
 
     /*Set the resolution of the display*/
+    // width * height = 480 * 800
     disp_drv.hor_res = g_tftlcd_lvgl_obj->tftlcd_cfg.p_dri->lcd_info.width;
     disp_drv.ver_res = g_tftlcd_lvgl_obj->tftlcd_cfg.p_dri->lcd_info.height;
 
@@ -119,6 +120,10 @@ void lv_port_disp_init(void)
     /*Fill a memory array with a color*/
     disp_drv.gpu_fill_cb = gpu_fill;
 #endif
+
+    /* set rotation to 90° */
+    disp_drv.sw_rotate = 1;                     // allow to rotate
+    disp_drv.rotated = LV_DISP_ROT_90;
 
     /*Finally register the driver*/
     lv_disp_drv_register(&disp_drv);

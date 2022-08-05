@@ -1244,7 +1244,8 @@ SD_Error hk_sd_read_block(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr, uint1
 	
 	if (p_cfg->devicemode == SD_POLLING_MODE)
 	{
-		INTX_DISABLE();						//关闭总中断(POLLING模式,严禁中断打断SDIO读写操作!!!)
+		// INTX_DISABLE();						//关闭总中断(POLLING模式,严禁中断打断SDIO读写操作!!!)
+		__disable_irq();
 
 		//无上溢/CRC/超时/完成(标志)/起始位错误
 		while (!(SDIO->STA & ((1<<5) | (1<<1) | (1<<3) | (1<<10) | (1<<9))))
@@ -1294,7 +1295,8 @@ SD_Error hk_sd_read_block(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr, uint1
 			tempbuff++;
 		}
 
-		INTX_ENABLE();//开启总中断
+		// INTX_ENABLE();//开启总中断
+		__enable_irq();
 		SDIO_ClearFlag(SDIO_STATIC_FLAGS);//清除所有标记
 	}
 	else if (p_cfg->devicemode == SD_DMA_MODE)
@@ -1415,7 +1417,8 @@ SD_Error hk_sd_read_multi_blocks(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr
 		
 		if (p_cfg->devicemode == SD_POLLING_MODE)
 		{
-			INTX_DISABLE();				//关闭总中断(POLLING模式,严禁中断打断SDIO读写操作!!!)
+			// INTX_DISABLE();				//关闭总中断(POLLING模式,严禁中断打断SDIO读写操作!!!)
+			__disable_irq();
 
 			//无上溢/CRC/超时/完成(标志)/起始位错误
 			while (!(SDIO->STA & ((1<<5) | (1<<1) | (1<<3) | (1<<8) | (1<<9))))
@@ -1488,7 +1491,8 @@ SD_Error hk_sd_read_multi_blocks(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr
 					}
 				}
 			}
-			INTX_ENABLE();						//开启总中断
+			// INTX_ENABLE();						//开启总中断
+			__enable_irq();
 			SDIO_ClearFlag(SDIO_STATIC_FLAGS);	//清除所有标记
 		}
 		else if (p_cfg->devicemode == SD_DMA_MODE)
@@ -1654,7 +1658,8 @@ SD_Error hk_sd_write_block(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr, uint
 	timeout = SDIO_DATATIMEOUT;
 	if (p_cfg->devicemode == SD_POLLING_MODE)
 	{
-		INTX_DISABLE();				//关闭总中断(POLLING模式,严禁中断打断SDIO读写操作!!!)
+		// INTX_DISABLE();				//关闭总中断(POLLING模式,严禁中断打断SDIO读写操作!!!)
+		__disable_irq();
 
 		// 数据块发送成功/下溢/CRC/超时/起始位错误
 		while (!(SDIO->STA & ((1<<10) | (1<<4) | (1<<1) | (1<<3) | (1<<9))))
@@ -1713,7 +1718,8 @@ SD_Error hk_sd_write_block(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr, uint
 			return SD_START_BIT_ERR;		 
 		}   
 		
-		INTX_ENABLE();				//开启总中断
+		// INTX_ENABLE();				//开启总中断
+		__enable_irq();
 		SDIO->ICR = 0X5FF;	 		//清除所有标记	  
 	}
 	else if (p_cfg->devicemode == SD_DMA_MODE)
@@ -1902,7 +1908,8 @@ SD_Error hk_sd_write_multi_blocks(sdio_cfg_t *p_cfg, uint8_t *buf, long long add
 		if (p_cfg->devicemode == SD_POLLING_MODE)
 		{
 			timeout = SDIO_DATATIMEOUT;
-			INTX_DISABLE();							//关闭总中断(POLLING模式,严禁中断打断SDIO读写操作!!!)
+			// INTX_DISABLE();							//关闭总中断(POLLING模式,严禁中断打断SDIO读写操作!!!)
+			__disable_irq();
 			
 			//下溢/CRC/数据结束/超时/起始位错误
 			while (!(SDIO->STA & ((1<<4) | (1<<1) | (1<<8) | (1<<3) | (1<<9))))
@@ -1984,7 +1991,8 @@ SD_Error hk_sd_write_multi_blocks(sdio_cfg_t *p_cfg, uint8_t *buf, long long add
 				}
 			}
 
-			INTX_ENABLE();						//开启总中断
+			// INTX_ENABLE();						//开启总中断
+			__enable_irq();
 			SDIO_ClearFlag(SDIO_STATIC_FLAGS);	//清除所有标记
 		}
 		else if (p_cfg->devicemode == SD_DMA_MODE)

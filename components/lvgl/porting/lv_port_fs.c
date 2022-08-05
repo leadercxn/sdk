@@ -187,7 +187,6 @@ static lv_fs_res_t fs_open (lv_fs_drv_t * drv, void * file_p, const char * path,
     else
     {
         snprintf(real_path, (sizeof(TCHAR)*strlen(path) + 4), "0:/%s", path);
-        trace_info("real path = %s\r\n", real_path);
 
         fres = f_open((FIL *)file_p, real_path, fs_mode);
         if (fres != FR_OK)
@@ -255,7 +254,6 @@ static lv_fs_res_t fs_read (lv_fs_drv_t * drv, void * file_p, void * buf, uint32
     }
     else
     {
-        trace_info("read ok...\r\n");
         res = LV_FS_RES_OK;
     }
 
