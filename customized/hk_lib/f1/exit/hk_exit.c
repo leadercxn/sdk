@@ -64,8 +64,7 @@ int hk_exit_disable(exit_cfg_t *p_exit_cfg)
     return 0;
 }
 
-#if 1
-// extern exit_object_t g_exit0_obj;
+
 void exit0_irq_handler(exit_cfg_t *p_exit_cfg)
 {
     hk_exit_cfg *p_hk_exit_cfg = (hk_exit_cfg *)g_exit0_obj.exit_cfg.p_exit_cfg;
@@ -79,9 +78,9 @@ void exit0_irq_handler(exit_cfg_t *p_exit_cfg)
 
     if (keyval == 1)
     {
-        trace_info("led on\r\n");
-        led_status = !led_status;
-        g_led_obj.gpio_ops.gpio_output_set(&g_led_obj.gpio_cfg, led_status);
+        // led_status = !led_status;
+        // g_led_obj.gpio_ops.gpio_output_set(&g_led_obj.gpio_cfg, led_status);
+        p_hk_exit_pin_cfg->press_cnt++;
     }
     EXTI_ClearITPendingBit(p_hk_exit_cfg->exit_line);
 }
@@ -89,20 +88,61 @@ void exit0_irq_handler(exit_cfg_t *p_exit_cfg)
 void EXTI0_IRQHandler(void)
 {
     hk_exit_cfg *p_hk_exit_cfg = (hk_exit_cfg *)g_exit0_obj.exit_cfg.p_exit_cfg;
-
     g_exit0_obj.exit_ops.exit_irq_cb(&g_exit0_obj.exit_cfg);
 }
-#endif
 
-// extern exit_object_t g_exit15_10_obj;
-// void EXTI15_10_IRQHandler(void)
-// {
-//   hk_exit_cfg *p_hk_exit_cfg = (hk_exit_cfg *)g_exit15_10_obj.exit_cfg.p_exit_cfg;
+void exit1_irq_handler(exit_cfg_t *p_exit_cfg)
+{
+    hk_exit_cfg *p_hk_exit_cfg = (hk_exit_cfg *)g_exit1_obj.exit_cfg.p_exit_cfg;
+    hk_exit_pin_cfg *p_hk_exit_pin_cfg = (hk_exit_pin_cfg *)g_exit1_obj.exit_cfg.p_pin_cfg;
+    gpio_object_t *p_exit_gpio = p_hk_exit_pin_cfg->exit_gpio_cfg;
+    uint8_t keyval = 0;
+    static bool led_status = true;
 
-//     if(EXTI_GetITStatus(p_hk_exit_cfg->exit_line) != RESET)
-//     {
-//         EXTI_ClearITPendingBit(p_hk_exit_cfg->exit_line);
+    p_exit_cfg->delay_ms(2);
+    p_exit_gpio->gpio_ops.gpio_input_get(&p_exit_gpio->gpio_cfg, &keyval);
 
-//         g_exit15_10_obj.exit_ops.exit_irq_cb(&g_exit15_10_obj.exit_cfg);
-//     }
-// }
+    if (keyval == 1)
+    {
+        // led_status = !led_status;
+        // g_led_obj.gpio_ops.gpio_output_set(&g_led_obj.gpio_cfg, led_status);
+        p_hk_exit_pin_cfg->press_cnt++;
+    }
+    EXTI_ClearITPendingBit(p_hk_exit_cfg->exit_line);
+}
+
+void EXTI1_IRQHandler(void)
+{
+    hk_exit_cfg *p_hk_exit_cfg = (hk_exit_cfg *)g_exit1_obj.exit_cfg.p_exit_cfg;
+    g_exit1_obj.exit_ops.exit_irq_cb(&g_exit1_obj.exit_cfg);
+}
+
+// TODO: PC13 无法触发外部中断
+void exit13_irq_handler(exit_cfg_t *p_exit_cfg)
+{
+    hk_exit_cfg *p_hk_exit_cfg = (hk_exit_cfg *)g_exit13_obj.exit_cfg.p_exit_cfg;
+    hk_exit_pin_cfg *p_hk_exit_pin_cfg = (hk_exit_pin_cfg *)g_exit13_obj.exit_cfg.p_pin_cfg;
+    gpio_object_t *p_exit_gpio = p_hk_exit_pin_cfg->exit_gpio_cfg;
+    uint8_t keyval = 0;
+    static bool led_status = true;
+
+    p_exit_cfg->delay_ms(2);
+    p_exit_gpio->gpio_ops.gpio_input_get(&p_exit_gpio->gpio_cfg, &keyval);
+
+    if (keyval == 1)
+    {
+        led_status = !led_status;
+        g_led_obj.gpio_ops.gpio_output_set(&g_led_obj.gpio_cfg, led_status);
+    }
+    EXTI_ClearITPendingBit(p_hk_exit_cfg->exit_line);
+}
+
+void EXTI15_10_IRQHandler(void)
+{
+    
+    hk_exit_cfg *p_hk_exit_cfg = (hk_exit_cfg *)g_exit13_obj.exit_cfg.p_exit_cfg;
+    if (EXTI_GetITStatus(p_hk_exit_cfg->exit_line) != RESET)
+    {
+        g_exit13_obj.exit_ops.exit_irq_cb(&g_exit13_obj.exit_cfg);
+    }
+}

@@ -13,6 +13,8 @@ typedef struct
     uint8_t      exit_pin_port_source;
     uint8_t      exit_pin_source;
 
+    uint32_t    press_cnt;
+
 } hk_exit_pin_cfg;
 
 typedef struct
@@ -34,5 +36,7 @@ int hk_exit_enable(exit_cfg_t *p_exit_cfg);
 int hk_exit_disable(exit_cfg_t *p_exit_cfg);
 
 void exit0_irq_handler(exit_cfg_t *p_exit_cfg);
+void exit1_irq_handler(exit_cfg_t *p_exit_cfg);
+void exit13_irq_handler(exit_cfg_t *p_exit_cfg);
 
 #endif
