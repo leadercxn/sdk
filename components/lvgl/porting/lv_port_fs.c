@@ -129,8 +129,7 @@ static void fs_init(void)
     /*E.g. for FatFS initialize the SD card and FatFS itself*/
 
     /*You code here*/
-    uint8_t res = 1;
-    FRESULT fres;
+    FRESULT fres = FR_OK;
     while (g_sdio_obj.sdio_ops.sd_init(&g_sdio_obj.sdio_cfg))
     {
         g_systick_obj.systick_ops.delay_ms(1000);
@@ -302,7 +301,7 @@ static lv_fs_res_t fs_seek (lv_fs_drv_t * drv, void * file_p, uint32_t pos)
     lv_fs_res_t res = LV_FS_RES_NOT_IMP;
 
     /* Add your code here*/
-    FRESULT fres;
+    FRESULT fres = FR_OK;
     res = f_lseek((FIL*)file_p, pos);
     if (fres != FR_OK)
     {
