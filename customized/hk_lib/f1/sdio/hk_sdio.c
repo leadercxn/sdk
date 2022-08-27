@@ -1046,9 +1046,9 @@ SD_Error hk_sd_init(sdio_cfg_t *p_cfg)
 
         //设置时钟频率,SDIO时钟计算公式:SDIO_CK时钟=SDIOCLK/[clkdiv+2];其中,SDIOCLK固定为48Mhz 
 		hk_sdio_clk_set(clkdiv);				
-		//errorstatus = hk_sd_set_device_mode(p_cfg, SD_DMA_MODE);	//设置为DMA模式
+		errorstatus = hk_sd_set_device_mode(p_cfg, SD_DMA_MODE);	//设置为DMA模式
 
-		errorstatus = hk_sd_set_device_mode(p_cfg, SD_POLLING_MODE);	//设置为查询模式
+		// errorstatus = hk_sd_set_device_mode(p_cfg, SD_POLLING_MODE);	//设置为查询模式
     }
 
 	return errorstatus;	
@@ -1155,7 +1155,7 @@ void hk_sd_dma_cfg(uint32_t*mbuf, uint32_t bufsize, uint32_t dir)
 	DMA_InitStructure.DMA_M2M 					= DMA_M2M_Disable;  			//DMA通道x没有设置为内存到内存传输
 	DMA_Init(DMA2_Channel4, &DMA_InitStructure);  //根据DMA_InitStruct中指定的参数初始化DMA的通道USART1_Tx_DMA_Channel所标识的寄存器
 
-	DMA_Cmd(DMA2_Channel4, DISABLE ); //开启DMA2 通道4
+	DMA_Cmd(DMA2_Channel4, ENABLE ); //开启DMA2 通道4
 }
 
 
