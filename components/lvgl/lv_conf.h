@@ -48,7 +48,7 @@
 
 /* Default display refresh period.
  * Can be changed in the display driver (`lv_disp_drv_t`).*/
-#define LV_DISP_DEF_REFR_PERIOD      30      /*[ms]*/
+#define LV_DISP_DEF_REFR_PERIOD      10      /*[ms]*/
 
 /* Dot Per Inch: used to initialize default sizes.
  * E.g. a button with width = LV_DPI / 2 -> half inch wide
@@ -585,7 +585,7 @@ typedef void * lv_obj_user_data_t;
 #define LV_USE_BTN      1
 
 /*Button matrix (dependencies: -)*/
-#define LV_USE_BTNMATRIX     1
+#define LV_USE_BTNMATRIX     0
 
 /*Calendar (dependencies: -)*/
 #define LV_USE_CALENDAR 0
@@ -594,13 +594,13 @@ typedef void * lv_obj_user_data_t;
 #endif
 
 /*Canvas (dependencies: lv_img)*/
-#define LV_USE_CANVAS   1
+#define LV_USE_CANVAS   0
 
 /*Check box (dependencies: lv_btn, lv_label)*/
-#define LV_USE_CHECKBOX       1
+#define LV_USE_CHECKBOX       0
 
 /*Chart (dependencies: -)*/
-#define LV_USE_CHART    1
+#define LV_USE_CHART    0
 #if LV_USE_CHART
 #  define LV_CHART_AXIS_TICK_LABEL_MAX_LEN    256
 #endif
@@ -609,20 +609,20 @@ typedef void * lv_obj_user_data_t;
 #define LV_USE_CONT     1
 
 /*Color picker (dependencies: -*/
-#define LV_USE_CPICKER   1
+#define LV_USE_CPICKER   0
 
 /*Drop down list (dependencies: lv_page, lv_label, lv_symbol_def.h)*/
-#define LV_USE_DROPDOWN    1
+#define LV_USE_DROPDOWN    0
 #if LV_USE_DROPDOWN != 0
 /*Open and close default animation time [ms] (0: no animation)*/
 #  define LV_DROPDOWN_DEF_ANIM_TIME     200
 #endif
 
 /*Gauge (dependencies:lv_bar, lv_linemeter)*/
-#define LV_USE_GAUGE    1
+#define LV_USE_GAUGE    0
 
 /*Image (dependencies: lv_label*/
-#define LV_USE_IMG      1
+#define LV_USE_IMG      0
 
 /*Image Button (dependencies: lv_btn*/
 #define LV_USE_IMGBTN   0
@@ -668,7 +668,7 @@ typedef void * lv_obj_user_data_t;
 #endif
 
 /*Line meter (dependencies: *;)*/
-#define LV_USE_LINEMETER   1
+#define LV_USE_LINEMETER   0
 #if LV_USE_LINEMETER
 /* Draw line more precisely at cost of performance.
  * Useful if there are lot of lines any minor are visible
@@ -686,7 +686,7 @@ typedef void * lv_obj_user_data_t;
 #define LV_USE_MSGBOX     0
 
 /*Page (dependencies: lv_cont)*/
-#define LV_USE_PAGE     1
+#define LV_USE_PAGE     0
 #if LV_USE_PAGE != 0
 /*Focus default animation time [ms] (0: no animation)*/
 #  define LV_PAGE_DEF_ANIM_TIME     400
@@ -711,7 +711,7 @@ typedef void * lv_obj_user_data_t;
 #endif
 
 /*Slider (dependencies: lv_bar)*/
-#define LV_USE_SLIDER    1
+#define LV_USE_SLIDER    0
 
 /*Spinbox (dependencies: lv_ta)*/
 #define LV_USE_SPINBOX       0
