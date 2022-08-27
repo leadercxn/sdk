@@ -1,6 +1,7 @@
 #include "nt35510_fsmc.h"
 #include "fsmc.h"
 #include "lib_error.h"
+#include "trace.h"
 
 int nt35510_hardware_init(tftlcd_driver_t *p_driver)
 {
@@ -71,7 +72,7 @@ int nt35510_write_data(tftlcd_driver_t *p_driver, uint16_t data)
 int nt35510_read_data(tftlcd_driver_t *p_driver)
 {
     nt35510_fsmc_info_t *p_drv_info = (nt35510_fsmc_info_t *)p_driver->p_tft_cfg;
-    uint16_t data;
+    uint16_t data = 0;
 
     if (p_drv_info->buswidth == LCDBUSWIDTH_8B)
     {
@@ -109,7 +110,7 @@ int nt35510_write_reg(tftlcd_driver_t *p_driver, uint16_t cmd, uint16_t data)
 int nt35510_read_reg(tftlcd_cfg_t *p_cfg, uint16_t cmd)
 {
     nt35510_fsmc_info_t *p_drv_info = (nt35510_fsmc_info_t *)p_cfg->p_dri->p_tft_cfg;
-    uint16_t data;
+    uint16_t data = 0;
 
     if (p_drv_info->buswidth == LCDBUSWIDTH_8B)
     {
@@ -577,6 +578,7 @@ int nt35510_init(tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops)
     // 3. 最后亮背光
     p_drv_info->bl_pin.gpio_ops.gpio_output_set(&p_drv_info->bl_pin.gpio_cfg, 1);
 
+    trace_info("nt35510 init.\r\n");
     return 0;
 }
 
@@ -631,8 +633,16 @@ int nt35510_set_scan_dir(tftlcd_cfg_t *p_cfg, uint16_t dir)
 {
     tftlcd_driver_t *p_dri = p_cfg->p_dri;
     tftlcd_info_t   lcd_info = p_cfg->p_dri->lcd_info;
+    uint16_t regval = 0;
 
-    p_cfg->write_reg(p_dri, 0x3600, 0x00);
+    if (dir == 0)
+    {
+        regval |= (0<<7)|(0<<6)|(0<<5);     //从左到右,从上到下
+    }
+    else if (dir == 1)
+    {
+        regval |= (1<<7)|(0<<6)|(1<<5);     //从右到左,从上到下
+    }
 
     p_cfg->p_dri->lcd_info.dir = dir;
     if (dir == 1)           // 横屏时需要对调
@@ -641,24 +651,25 @@ int nt35510_set_scan_dir(tftlcd_cfg_t *p_cfg, uint16_t dir)
         p_cfg->p_dri->lcd_info.width = p_cfg->p_dri->lcd_info.height;
         p_cfg->p_dri->lcd_info.height = tmp;
     }
-
+    
+    p_cfg->write_reg(p_dri, 0x3600, regval);
     p_cfg->write_cmd(p_dri, lcd_info.setxcmd);
     p_cfg->write_data(p_dri, 0);
     p_cfg->write_cmd(p_dri, lcd_info.setxcmd+1);
     p_cfg->write_data(p_dri, 0);
     p_cfg->write_cmd(p_dri, lcd_info.setxcmd+2);
-    p_cfg->write_data(p_dri, ((lcd_info.width - 1) >> 8));
+    p_cfg->write_data(p_dri, ((p_cfg->p_dri->lcd_info.width - 1) >> 8));
     p_cfg->write_cmd(p_dri, lcd_info.setxcmd+3);
-    p_cfg->write_data(p_dri, ((lcd_info.width - 1) & 0xff));
+    p_cfg->write_data(p_dri, ((p_cfg->p_dri->lcd_info.width - 1) & 0xff));
 
     p_cfg->write_cmd(p_dri, lcd_info.setycmd);
     p_cfg->write_data(p_dri, 0);
     p_cfg->write_cmd(p_dri, lcd_info.setycmd+1);
     p_cfg->write_data(p_dri, 0);
     p_cfg->write_cmd(p_dri, lcd_info.setycmd+2);
-    p_cfg->write_data(p_dri, ((lcd_info.height - 1) >> 8));
+    p_cfg->write_data(p_dri, ((p_cfg->p_dri->lcd_info.height - 1) >> 8));
     p_cfg->write_cmd(p_dri, lcd_info.setycmd+3);
-    p_cfg->write_data(p_dri, ((lcd_info.height - 1) & 0xff));
+    p_cfg->write_data(p_dri, ((p_cfg->p_dri->lcd_info.height - 1) & 0xff));
 
     return 0;
 }
