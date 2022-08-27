@@ -174,6 +174,7 @@ typedef struct tftlcd_ops
     // common function
     int (*clear_screen)     (tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops);
     int (*fill_area)        (tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops, fill_object_t area);
+    int (*fill_area_color)  (tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops, fill_object_t area, uint16_t *color);
     int (*draw_point)       (tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops, point_object_t point);
     int (*show_char)        (tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops, chars_info_t ch);
     int (*show_string)      (tftlcd_cfg_t *p_cfg);
@@ -200,5 +201,6 @@ int tftlcd_clear_screen(tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops);
 int tftlcd_fill_area(tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops, fill_object_t area);
 int tftlcd_draw_point(tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops, point_object_t point);
 int tftlcd_show_char(tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops, chars_info_t ch);
+int tftlcd_fill_area_color(tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops, fill_object_t area, uint16_t *color);
 
 #endif

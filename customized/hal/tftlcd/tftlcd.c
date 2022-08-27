@@ -35,6 +35,25 @@ int tftlcd_fill_area(tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops, fill_object_
     return 0;
 }
 
+int tftlcd_fill_area_color(tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops, fill_object_t area, uint16_t *color)
+{
+    uint16_t width = area.coord_e.x - area.coord_s.x + 1;
+    uint16_t height = area.coord_e.y - area.coord_s.y + 1;
+
+    for (uint16_t y = 0; y < height; y++)
+    {
+        p_ops->set_cursor(p_cfg, area.coord_s.x, area.coord_s.y+y);
+        p_ops->write_ram_pre(p_cfg);
+
+        for (uint16_t x = 0; x < width; x++)
+        {
+            p_ops->write_ram(p_cfg, *color++);
+        }
+    }
+
+    return 0;
+}
+
 int tftlcd_draw_point(tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops, point_object_t point)
 {
     p_ops->set_cursor(p_cfg, point.coord.x, point.coord.y);
