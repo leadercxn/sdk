@@ -673,3 +673,82 @@ int nt35510_set_scan_dir(tftlcd_cfg_t *p_cfg, uint16_t dir)
 
     return 0;
 }
+
+int nt35510_fill_color(tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops, fill_object_t area, uint16_t *color)
+{
+    uint16_t width = area.coord_e.x - area.coord_s.x + 1;
+    uint16_t height = area.coord_e.y - area.coord_s.y + 1;
+
+#if 1
+    for (uint16_t y = 0; y < height; y++)
+    {
+        p_ops->set_cursor(p_cfg, area.coord_s.x, area.coord_s.y+y);
+        p_ops->write_ram_pre(p_cfg);
+
+        for (uint16_t x = 0; x < width; x++)
+        {
+            p_ops->write_ram(p_cfg, *color++);
+        }
+    }
+#else
+    // 通过DMA方式发送，需要在此处实现非单色块填充函数
+    uint16_t i = 0, j = 0;
+    uint32_t timeout = (uint32_t)0xFFFFFFFF;  
+    nt35510_fsmc_info_t *p_drv_info = (nt35510_fsmc_info_t *)p_cfg->p_dri->p_tft_cfg;
+    lcdtype_16b_t *p_lcd_addr = (lcdtype_16b_t *)p_drv_info->lcd_addr;
+
+	DMA_InitTypeDef DMA_InitStructure;
+
+	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);	//使能DMA2时钟
+
+	DMA_DeInit(DMA1_Channel1);   		//将DMA2的通道4寄存器重设为缺省值
+	DMA_Cmd(DMA1_Channel1, DISABLE ); 	//关闭DMA2 通道4
+
+	DMA_InitStructure.DMA_PeripheralBaseAddr 	= (uint32_t)color;  	//DMA外设基地址
+	DMA_InitStructure.DMA_MemoryBaseAddr 		= (uint32_t)p_lcd_addr->lcd_data;  	//DMA内存基地址
+	DMA_InitStructure.DMA_DIR 					= DMA_DIR_PeripheralSRC;  	//数据传输方向，从内存读取发送到外设
+	DMA_InitStructure.DMA_BufferSize 			= width;  			        //DMA通道的DMA缓存的大小
+	DMA_InitStructure.DMA_PeripheralInc 		= DMA_PeripheralInc_Enable;  	//外设地址寄存器递增
+	DMA_InitStructure.DMA_MemoryInc 			= DMA_MemoryInc_Disable;			//内存地址寄存器不变
+	DMA_InitStructure.DMA_PeripheralDataSize 	= DMA_PeripheralDataSize_HalfWord;  //数据宽度为16位
+	DMA_InitStructure.DMA_MemoryDataSize 		= DMA_MemoryDataSize_HalfWord; 		//数据宽度为16位
+	DMA_InitStructure.DMA_Mode 					= DMA_Mode_Normal;  			//工作在正常缓存模式
+	DMA_InitStructure.DMA_Priority 				= DMA_Priority_High; 			//DMA通道 x拥有高优先级 
+	DMA_InitStructure.DMA_M2M 					= DMA_M2M_Enable;  			//DMA通道x没有设置为内存到内存传输
+	DMA_Init(DMA1_Channel1, &DMA_InitStructure);    //根据DMA_InitStruct中指定的参数初始化DMA的通道USART1_Tx_DMA_Channel所标识的寄存器
+
+    trace_info("DMA transfer start...\r\n");
+    for (j = 0; j < height; j++)
+    {
+        p_ops->set_cursor(p_cfg, area.coord_s.x, area.coord_s.y+j);
+        p_ops->write_ram_pre(p_cfg);
+
+        // SDIO->MASK |= (1<<1) | (1<<3) | (1<<8) | (1<<4) | (1<<9);	//配置产生数据接收完成中断
+        // SDIO->DCTRL |= 1<<3;										//SDIO DMA使能. 
+        DMA_Cmd(DMA1_Channel1, ENABLE );                //开启DMA2 通道4
+
+        #if 0
+        while (((DMA1->ISR & 0X2000) == RESET) && timeout)			//等待传输完成 
+        {
+            timeout--;
+        }
+
+        if (timeout == 0)
+        {
+            trace_info("DMA transfer timeout...\r\n");
+        }
+        #else
+        while (DMA_GetFlagStatus(DMA1_FLAG_TC1) == RESET);
+        #endif
+        // p_cfg->delay_us(3);
+
+        DMA_Cmd(DMA1_Channel1, DISABLE );                //开启DMA2 通道4
+    }   
+    trace_info("DMA transfer end...\r\n");
+
+#endif
+
+    return 0;
+}
+
+
