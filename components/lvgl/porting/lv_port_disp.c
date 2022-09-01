@@ -10,6 +10,8 @@
  *      INCLUDES
  *********************/
 #include "lv_port_disp.h"
+#include "nt35510_fsmc.h"
+#include "trace.h"
 
 /*********************
  *      DEFINES
@@ -76,8 +78,8 @@ void lv_port_disp_init(void)
 
     /* Example for 1) */
     static lv_disp_buf_t draw_buf_dsc_1;
-    static lv_color_t draw_buf_1[LV_HOR_RES_MAX * 10];                          /*A buffer for 10 rows*/
-    lv_disp_buf_init(&draw_buf_dsc_1, draw_buf_1, NULL, LV_HOR_RES_MAX * 10);   /*Initialize the display buffer*/
+    static lv_color_t draw_buf_1[LV_HOR_RES_MAX * LV_VER_RES_MAX / 4];                          /*A buffer for 10 rows*/
+    lv_disp_buf_init(&draw_buf_dsc_1, draw_buf_1, NULL, LV_HOR_RES_MAX * LV_VER_RES_MAX / 4);   /*Initialize the display buffer*/
 
     // /* Example for 2) */
     // static lv_disp_buf_t draw_buf_dsc_2;
@@ -122,8 +124,8 @@ void lv_port_disp_init(void)
 #endif
 
     /* set rotation to 90° */
-    disp_drv.sw_rotate = 1;                     // allow to rotate
-    disp_drv.rotated = LV_DISP_ROT_90;
+    // disp_drv.sw_rotate = 1;                     // allow to rotate
+    // disp_drv.rotated = LV_DISP_ROT_90;
 
     /*Finally register the driver*/
     lv_disp_drv_register(&disp_drv);
@@ -145,24 +147,12 @@ static void disp_init(void)
  * 'lv_disp_flush_ready()' has to be called when finished. */
 static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p)
 {
-    /*The most simple case (but also the slowest) to put all pixels to the screen one-by-one*/
-
-    int32_t x;
-    int32_t y;
-    point_object_t point_obj;
-
-    for(y = area->y1; y <= area->y2; y++) {
-        for(x = area->x1; x <= area->x2; x++) {
-            /* Put a pixel to the display. For example: */
-            /* put_px(x, y, *color_p)*/
-            point_obj.coord.x = x;
-            point_obj.coord.y = y;
-            point_obj.color = color_p->full;
-            g_tftlcd_lvgl_obj->tftlcd_ops.draw_point(&g_tftlcd_lvgl_obj->tftlcd_cfg, &g_tftlcd_lvgl_obj->tftlcd_ops, point_obj);
-
-            color_p++;
-        }
-    }
+    fill_object_t fill;
+    fill.coord_s.x = area->x1;
+    fill.coord_s.y = area->y1;
+    fill.coord_e.x = area->x2;
+    fill.coord_e.y = area->y2;
+    g_tftlcd_lvgl_obj->tftlcd_ops.fill_area_color(&g_tftlcd_lvgl_obj->tftlcd_cfg, &g_tftlcd_lvgl_obj->tftlcd_ops, fill, (uint16_t *)color_p);
 
     /* IMPORTANT!!!
      * Inform the graphics library that you are ready with the flushing*/

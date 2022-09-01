@@ -18,6 +18,7 @@ extern "C" {
  *********************/
 #include "lvgl.h"
 #include "tftlcd.h"
+#include "stm32f10x.h"
 
 /*********************
  *      DEFINES
