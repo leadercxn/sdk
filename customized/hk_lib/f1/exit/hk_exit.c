@@ -15,7 +15,7 @@ int hk_exit_init(exit_cfg_t *p_exit_cfg)
     p_hk_exit_pin_cfg->exit_gpio_cfg->gpio_ops.gpio_init(&p_hk_exit_pin_cfg->exit_gpio_cfg->gpio_cfg);
 
     // 2. exit init
-    RCC_AHBPeriphClockCmd(p_hk_exit_pin_cfg->exit_clk, ENABLE);
+    RCC_APB2PeriphClockCmd(p_hk_exit_pin_cfg->exit_clk, ENABLE);
 
     GPIO_EXTILineConfig(p_hk_exit_pin_cfg->exit_pin_port_source, p_hk_exit_pin_cfg->exit_pin_source);
     EXTI_InitStructure.EXTI_Line    = p_hk_exit_cfg->exit_line;  
@@ -97,15 +97,12 @@ void exit1_irq_handler(exit_cfg_t *p_exit_cfg)
     hk_exit_pin_cfg *p_hk_exit_pin_cfg = (hk_exit_pin_cfg *)g_exit1_obj.exit_cfg.p_pin_cfg;
     gpio_object_t *p_exit_gpio = p_hk_exit_pin_cfg->exit_gpio_cfg;
     uint8_t keyval = 0;
-    static bool led_status = true;
 
     p_exit_cfg->delay_ms(2);
     p_exit_gpio->gpio_ops.gpio_input_get(&p_exit_gpio->gpio_cfg, &keyval);
 
     if (keyval == 1)
     {
-        // led_status = !led_status;
-        // g_led_obj.gpio_ops.gpio_output_set(&g_led_obj.gpio_cfg, led_status);
         p_hk_exit_pin_cfg->press_cnt++;
     }
     EXTI_ClearITPendingBit(p_hk_exit_cfg->exit_line);
@@ -117,7 +114,6 @@ void EXTI1_IRQHandler(void)
     g_exit1_obj.exit_ops.exit_irq_cb(&g_exit1_obj.exit_cfg);
 }
 
-// TODO: PC13 无法触发外部中断
 void exit13_irq_handler(exit_cfg_t *p_exit_cfg)
 {
     hk_exit_cfg *p_hk_exit_cfg = (hk_exit_cfg *)g_exit13_obj.exit_cfg.p_exit_cfg;
