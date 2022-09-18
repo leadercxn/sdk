@@ -36,7 +36,7 @@ int hk_exit_enable(exit_cfg_t *p_exit_cfg);
 int hk_exit_disable(exit_cfg_t *p_exit_cfg);
 
 void exit0_irq_handler(exit_cfg_t *p_exit_cfg);
-void exit1_irq_handler(exit_cfg_t *p_exit_cfg);
+void exit_irq_handler(exit_cfg_t *p_exit_cfg);
 void exit13_irq_handler(exit_cfg_t *p_exit_cfg);
 
 #endif

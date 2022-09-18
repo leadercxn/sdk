@@ -64,48 +64,10 @@ int hk_exit_disable(exit_cfg_t *p_exit_cfg)
     return 0;
 }
 
-
-void exit0_irq_handler(exit_cfg_t *p_exit_cfg)
-{
-    hk_exit_cfg *p_hk_exit_cfg = (hk_exit_cfg *)g_exit0_obj.exit_cfg.p_exit_cfg;
-    hk_exit_pin_cfg *p_hk_exit_pin_cfg = (hk_exit_pin_cfg *)g_exit0_obj.exit_cfg.p_pin_cfg;
-    gpio_object_t *p_exit_gpio = p_hk_exit_pin_cfg->exit_gpio_cfg;
-    uint8_t keyval = 0;
-    static bool led_status = true;
-
-    p_exit_cfg->delay_ms(2);
-    p_exit_gpio->gpio_ops.gpio_input_get(&p_exit_gpio->gpio_cfg, &keyval);
-
-    if (keyval == 1)
-    {
-        // led_status = !led_status;
-        // g_led_obj.gpio_ops.gpio_output_set(&g_led_obj.gpio_cfg, led_status);
-        p_hk_exit_pin_cfg->press_cnt++;
-    }
-    EXTI_ClearITPendingBit(p_hk_exit_cfg->exit_line);
-}
-
 void EXTI0_IRQHandler(void)
 {
     hk_exit_cfg *p_hk_exit_cfg = (hk_exit_cfg *)g_exit0_obj.exit_cfg.p_exit_cfg;
     g_exit0_obj.exit_ops.exit_irq_cb(&g_exit0_obj.exit_cfg);
-}
-
-void exit1_irq_handler(exit_cfg_t *p_exit_cfg)
-{
-    hk_exit_cfg *p_hk_exit_cfg = (hk_exit_cfg *)g_exit1_obj.exit_cfg.p_exit_cfg;
-    hk_exit_pin_cfg *p_hk_exit_pin_cfg = (hk_exit_pin_cfg *)g_exit1_obj.exit_cfg.p_pin_cfg;
-    gpio_object_t *p_exit_gpio = p_hk_exit_pin_cfg->exit_gpio_cfg;
-    uint8_t keyval = 0;
-
-    p_exit_cfg->delay_ms(2);
-    p_exit_gpio->gpio_ops.gpio_input_get(&p_exit_gpio->gpio_cfg, &keyval);
-
-    if (keyval == 1)
-    {
-        p_hk_exit_pin_cfg->press_cnt++;
-    }
-    EXTI_ClearITPendingBit(p_hk_exit_cfg->exit_line);
 }
 
 void EXTI1_IRQHandler(void)
@@ -114,23 +76,18 @@ void EXTI1_IRQHandler(void)
     g_exit1_obj.exit_ops.exit_irq_cb(&g_exit1_obj.exit_cfg);
 }
 
-void exit13_irq_handler(exit_cfg_t *p_exit_cfg)
+// EXTI3-->encoder sw
+void EXTI3_IRQHandler(void)
 {
-    hk_exit_cfg *p_hk_exit_cfg = (hk_exit_cfg *)g_exit13_obj.exit_cfg.p_exit_cfg;
-    hk_exit_pin_cfg *p_hk_exit_pin_cfg = (hk_exit_pin_cfg *)g_exit13_obj.exit_cfg.p_pin_cfg;
-    gpio_object_t *p_exit_gpio = p_hk_exit_pin_cfg->exit_gpio_cfg;
-    uint8_t keyval = 0;
-    static bool led_status = true;
+    hk_exit_cfg *p_hk_exit_cfg = (hk_exit_cfg *)g_encoder_obj.pin_sw->exit_cfg.p_exit_cfg;
+    g_encoder_obj.pin_sw->exit_ops.exit_irq_cb(&g_encoder_obj.pin_sw->exit_cfg);
+}
 
-    p_exit_cfg->delay_ms(2);
-    p_exit_gpio->gpio_ops.gpio_input_get(&p_exit_gpio->gpio_cfg, &keyval);
-
-    if (keyval == 1)
-    {
-        led_status = !led_status;
-        g_led_obj.gpio_ops.gpio_output_set(&g_led_obj.gpio_cfg, led_status);
-    }
-    EXTI_ClearITPendingBit(p_hk_exit_cfg->exit_line);
+//EXTI4-->encoder exti
+void EXTI4_IRQHandler(void)
+{
+    hk_exit_cfg *p_hk_exit_cfg = (hk_exit_cfg *)g_encoder_obj.pin_exit->exit_cfg.p_exit_cfg;
+    g_encoder_obj.pin_exit->exit_ops.exit_irq_cb(&g_encoder_obj.pin_exit->exit_cfg);
 }
 
 void EXTI15_10_IRQHandler(void)
@@ -141,4 +98,22 @@ void EXTI15_10_IRQHandler(void)
     {
         g_exit13_obj.exit_ops.exit_irq_cb(&g_exit13_obj.exit_cfg);
     }
+}
+
+
+void exit_irq_handler(exit_cfg_t *p_exit_cfg)
+{
+    hk_exit_cfg *p_hk_exit_cfg = (hk_exit_cfg *)p_exit_cfg->p_exit_cfg;
+    hk_exit_pin_cfg *p_hk_exit_pin_cfg = (hk_exit_pin_cfg *)p_exit_cfg->p_pin_cfg;
+    gpio_object_t *p_exit_gpio = p_hk_exit_pin_cfg->exit_gpio_cfg;
+    uint8_t keyval = 0;
+
+    p_exit_cfg->delay_ms(2);
+    p_exit_gpio->gpio_ops.gpio_input_get(&p_exit_gpio->gpio_cfg, &keyval);
+
+    if (keyval == 1)
+    {
+        p_hk_exit_pin_cfg->press_cnt++;
+    }
+    EXTI_ClearITPendingBit(p_hk_exit_cfg->exit_line);
 }
