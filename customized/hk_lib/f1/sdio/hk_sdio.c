@@ -14,7 +14,7 @@ extern sdio_obj_t g_sdio_obj;
 
 // SD_ReadDisk/SD_WriteDisk函数专用buf,当这两个函数的数据缓存区地址不是4字节对齐的时候,
 // 需要用到该数组,确保数据缓存区地址是4字节对齐的.
-// uint8_t SDIO_DATA_BUFFER[512] __attribute__ ((aligned(4)));	
+uint8_t SDIO_DATA_BUFFER[512] __attribute__ ((aligned(4)));	
 
 SD_Error CmdError(void);  
 SD_Error CmdResp7Error(void);
@@ -2060,16 +2060,16 @@ uint8_t hk_sd_read_disk(sdio_cfg_t *p_cfg, uint8_t *buf, uint32_t sector, uint8_
 	uint8_t n;
 
 	lsector <<= 9;
-	// if ((uint32_t)buf % 4 != 0)
-	// {
-	// 	for (n = 0; n < cnt; n++)
-	// 	{
-	// 		sta = hk_sd_read_block(p_cfg, SDIO_DATA_BUFFER, lsector + 512 * n, 512);	//单个sector的读操作
-	// 		memcpy(buf, SDIO_DATA_BUFFER, 512);
-	// 		buf += 512;
-	// 	} 
-	// }
-	// else
+	if ((uint32_t)buf % 4 != 0)
+	{
+		for (n = 0; n < cnt; n++)
+		{
+			sta = hk_sd_read_block(p_cfg, SDIO_DATA_BUFFER, lsector + 512 * n, 512);	//单个sector的读操作
+			memcpy(buf, SDIO_DATA_BUFFER, 512);
+			buf += 512;
+		} 
+	}
+	else
 	{
 		if (cnt == 1)
 		{
@@ -2096,16 +2096,16 @@ uint8_t hk_sd_write_disk(sdio_cfg_t *p_cfg, uint8_t*buf, uint32_t sector, uint8_
 	long long lsector = sector;
 
 	lsector <<= 9;
-	// if ((uint32_t)buf % 4 != 0)
-	// {
-	// 	for (n = 0; n < cnt; n++)
-	// 	{
-	// 		memcpy(SDIO_DATA_BUFFER, buf, 512);
-	// 		sta = hk_sd_write_block(p_cfg, SDIO_DATA_BUFFER, lsector + 512 * n, 512);	//单个sector的写操作
-	// 		buf += 512;
-	// 	} 
-	// }
-	// else
+	if ((uint32_t)buf % 4 != 0)
+	{
+		for (n = 0; n < cnt; n++)
+		{
+			memcpy(SDIO_DATA_BUFFER, buf, 512);
+			sta = hk_sd_write_block(p_cfg, SDIO_DATA_BUFFER, lsector + 512 * n, 512);	//单个sector的写操作
+			buf += 512;
+		} 
+	}
+	else
 	{
 		if (cnt == 1)
 		{
