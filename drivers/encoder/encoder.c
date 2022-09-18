@@ -15,22 +15,11 @@ void encoder_init(encoder_object_t *p_encoder_obj)
     trace_info("encoder init is ok\r\n");
 }
 
-void EXTI3_IRQHandler(void)
-{
-    hk_exit_cfg *p_hk_exit_cfg = (hk_exit_cfg *)g_encoder_obj.pin_sw->exit_cfg.p_exit_cfg;
-    g_encoder_obj.pin_sw->exit_ops.exit_irq_cb(&g_encoder_obj.pin_sw->exit_cfg);
-}
-
-void EXTI4_IRQHandler(void)
-{
-    hk_exit_cfg *p_hk_exit_cfg = (hk_exit_cfg *)g_encoder_obj.pin_exit->exit_cfg.p_exit_cfg;
-    g_encoder_obj.pin_exit->exit_ops.exit_irq_cb(&g_encoder_obj.pin_exit->exit_cfg);
-}
 
 void encoder_sw_handler(exit_cfg_t *p_exit_cfg)
 {
-    hk_exit_cfg *p_hk_exit_cfg = (hk_exit_cfg *)g_encoder_obj.pin_sw->exit_cfg.p_exit_cfg;
-    hk_exit_pin_cfg *p_hk_exit_pin_cfg = (hk_exit_pin_cfg *)g_encoder_obj.pin_sw->exit_cfg.p_pin_cfg;
+    hk_exit_cfg *p_hk_exit_cfg = (hk_exit_cfg *)p_exit_cfg->p_exit_cfg;
+    hk_exit_pin_cfg *p_hk_exit_pin_cfg = (hk_exit_pin_cfg *)p_exit_cfg->p_pin_cfg;
     gpio_object_t *p_exit_gpio = p_hk_exit_pin_cfg->exit_gpio_cfg;
     uint8_t keyval = 0;
 
@@ -39,7 +28,7 @@ void encoder_sw_handler(exit_cfg_t *p_exit_cfg)
 
     if (keyval == 1)
     {
-        p_hk_exit_pin_cfg->press_cnt++;
+        g_encoder_obj.pressed = 1;
         trace_info("encoder pressed.\r\n");
     }
     EXTI_ClearITPendingBit(p_hk_exit_cfg->exit_line);
@@ -47,17 +36,21 @@ void encoder_sw_handler(exit_cfg_t *p_exit_cfg)
 
 void encoder_data_handler(exit_cfg_t *p_exit_cfg)
 {
-    static bool flag = 0;
-    static bool CW_1 = 0, CW_2 = 0;
     uint8_t keyvalA = 0, keyvalB = 0;
 
-    hk_exit_cfg *p_hk_exit_cfg = (hk_exit_cfg *)g_encoder_obj.pin_exit->exit_cfg.p_exit_cfg;
-    hk_exit_pin_cfg *p_hk_exit_pin_cfg = (hk_exit_pin_cfg *)g_encoder_obj.pin_exit->exit_cfg.p_pin_cfg;
+    hk_exit_cfg *p_hk_exit_cfg = (hk_exit_cfg *)p_exit_cfg->p_exit_cfg;
+    hk_exit_pin_cfg *p_hk_exit_pin_cfg = (hk_exit_pin_cfg *)p_exit_cfg->p_pin_cfg;
     gpio_object_t *p_exit_gpio = p_hk_exit_pin_cfg->exit_gpio_cfg;
+
     gpio_object_t *p_gpio = g_encoder_obj.pin_gpio;
 
+    // p_exit_cfg->delay_ms(2);
     p_exit_gpio->gpio_ops.gpio_input_get(&p_exit_gpio->gpio_cfg, &keyvalA);
     p_gpio->gpio_ops.gpio_input_get(&p_gpio->gpio_cfg, &keyvalB);
+
+#if 0       // 滤波更强
+    static bool flag = 0;
+    static bool CW_1 = 0, CW_2 = 0;
 
     if (!flag && !keyvalA)
     {
@@ -78,6 +71,16 @@ void encoder_data_handler(exit_cfg_t *p_exit_cfg)
         }
         flag = 0;
     }
+#else
+    if (keyvalB == 1)
+    {
+        g_encoder_obj.dir = 1;
+    }
+    else if (keyvalB == 0)
+    {
+        g_encoder_obj.dir = 2;
+    }
+#endif
 
     EXTI_ClearITPendingBit(p_hk_exit_cfg->exit_line);
 }

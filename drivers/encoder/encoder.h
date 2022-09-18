@@ -11,6 +11,7 @@ typedef struct encoder
     gpio_object_t *pin_gpio;
     int8_t  step;
     uint8_t dir;            // 0:初始状态，1:正转1格，2:反转1格
+    uint8_t pressed;
 }encoder_object_t;
 
 void encoder_init(encoder_object_t *p_encoder_obj);
