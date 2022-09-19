@@ -1,5 +1,4 @@
 #include "hk_sdio.h"
-#include "hk_sys.h"
 #include <string.h>
 #include "trace.h"
 
@@ -1243,9 +1242,8 @@ SD_Error hk_sd_read_block(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr, uint1
 	}
 	
 	if (p_cfg->devicemode == SD_POLLING_MODE)
-	{
-		// INTX_DISABLE();						//关闭总中断(POLLING模式,严禁中断打断SDIO读写操作!!!)
-		__disable_irq();
+	{				
+		__disable_irq();		//关闭总中断(POLLING模式,严禁中断打断SDIO读写操作!!!)
 
 		//无上溢/CRC/超时/完成(标志)/起始位错误
 		while (!(SDIO->STA & ((1<<5) | (1<<1) | (1<<3) | (1<<10) | (1<<9))))
@@ -1417,8 +1415,7 @@ SD_Error hk_sd_read_multi_blocks(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr
 		
 		if (p_cfg->devicemode == SD_POLLING_MODE)
 		{
-			// INTX_DISABLE();				//关闭总中断(POLLING模式,严禁中断打断SDIO读写操作!!!)
-			__disable_irq();
+			__disable_irq();		//关闭总中断(POLLING模式,严禁中断打断SDIO读写操作!!!)
 
 			//无上溢/CRC/超时/完成(标志)/起始位错误
 			while (!(SDIO->STA & ((1<<5) | (1<<1) | (1<<3) | (1<<8) | (1<<9))))
@@ -1658,8 +1655,7 @@ SD_Error hk_sd_write_block(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr, uint
 	timeout = SDIO_DATATIMEOUT;
 	if (p_cfg->devicemode == SD_POLLING_MODE)
 	{
-		// INTX_DISABLE();				//关闭总中断(POLLING模式,严禁中断打断SDIO读写操作!!!)
-		__disable_irq();
+		__disable_irq();	//关闭总中断(POLLING模式,严禁中断打断SDIO读写操作!!!)
 
 		// 数据块发送成功/下溢/CRC/超时/起始位错误
 		while (!(SDIO->STA & ((1<<10) | (1<<4) | (1<<1) | (1<<3) | (1<<9))))
@@ -1908,8 +1904,7 @@ SD_Error hk_sd_write_multi_blocks(sdio_cfg_t *p_cfg, uint8_t *buf, long long add
 		if (p_cfg->devicemode == SD_POLLING_MODE)
 		{
 			timeout = SDIO_DATATIMEOUT;
-			// INTX_DISABLE();							//关闭总中断(POLLING模式,严禁中断打断SDIO读写操作!!!)
-			__disable_irq();
+			__disable_irq();	//关闭总中断(POLLING模式,严禁中断打断SDIO读写操作!!!)
 			
 			//下溢/CRC/数据结束/超时/起始位错误
 			while (!(SDIO->STA & ((1<<4) | (1<<1) | (1<<8) | (1<<3) | (1<<9))))

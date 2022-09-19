@@ -1,5 +1,5 @@
 #include "nt35510_fsmc.h"
-#include "fsmc.h"
+#include "hk_fsmc.h"
 #include "lib_error.h"
 #include "trace.h"
 

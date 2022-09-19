@@ -1,4 +1,4 @@
-#include "fsmc.h"
+#include "hk_fsmc.h"
 
 static uint32_t m_fsmc_bank_norsram[] = 
 {FSMC_Bank1_NORSRAM1, FSMC_Bank1_NORSRAM2, FSMC_Bank1_NORSRAM3, FSMC_Bank1_NORSRAM4};
