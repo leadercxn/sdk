@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "gpio.h"
+#include "dma.h"
 
 //SDIO相关标志位
 #define SDIO_FLAG_CCRCFAIL                  ((uint32_t)0x00000001)
@@ -336,6 +337,7 @@ typedef struct {
     gpio_object_t   sd_gpio1;		// HKF1有两个gpio port
     gpio_object_t   sd_gpio2;
 
+	dma_object_t	*dma_obj;
     sd_card_info_t  *cardinfo;
 
 	uint8_t			devicemode;

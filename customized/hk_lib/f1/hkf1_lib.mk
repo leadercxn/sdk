@@ -1,3 +1,9 @@
+# dma
+CSRCS += hk_dma.c
+DEPPATH += --dep-path $(SDK_DIR)/customized/hk_lib/f1/dma
+VPATH += :$(SDK_DIR)/customized/hk_lib/f1/dma
+IFLAGS += "-I$(SDK_DIR)/customized/hk_lib/f1/dma"
+
 # exit
 CSRCS += hk_exit.c
 DEPPATH += --dep-path $(SDK_DIR)/customized/hk_lib/f1/exit

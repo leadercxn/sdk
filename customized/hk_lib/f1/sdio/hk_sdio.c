@@ -1174,7 +1174,7 @@ SD_Error hk_sd_read_block(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr, uint1
 		return SD_INVALID_PARAMETER; 
 	}
 
-   	SDIO->DCTRL = 0x0;									//数据控制寄存器清零(关DMA)   
+   	SDIO_DMACmd(DISABLE);									//数据控制寄存器清零(关DMA)   
 	if (p_cfg->cardinfo->cardtype == SDIO_HIGH_CAPACITY_SD_CARD)			//大容量卡
 	{
 		blksize = 512;
@@ -1299,7 +1299,11 @@ SD_Error hk_sd_read_block(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr, uint1
 	}
 	else if (p_cfg->devicemode == SD_DMA_MODE)
 	{
-		hk_sd_dma_cfg((uint32_t*)buf, blksize, DMA_DIR_PeripheralSRC); 
+		// hk_sd_dma_cfg((uint32_t*)buf, blksize, DMA_DIR_PeripheralSRC); 
+		p_cfg->dma_obj->dma_ops.dma_init(&p_cfg->dma_obj->dma_cfg, &SDIO->FIFO, (uint32_t*)buf, 
+											blksize, DMA_DIR_PeripheralSRC);
+		p_cfg->dma_obj->dma_ops.dma_transfer_ctrl(&p_cfg->dma_obj->dma_cfg, ENABLE);
+
 		g_sdio_obj.sdio_cfg.transfererror	= SD_OK;
 		g_sdio_obj.sdio_cfg.stopcondition	= 0;				//单块读,不需要发送停止传输指令
 		g_sdio_obj.sdio_cfg.transferend	= 0;				//传输结束标置位，在中断服务置1
@@ -1338,7 +1342,7 @@ SD_Error hk_sd_read_multi_blocks(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr
 	uint32_t timeout = SDIO_DATATIMEOUT;  
 
 	tempbuff=(uint32_t*)buf;					//转换为uint32_t指针
-	SDIO->DCTRL=0x0;							//数据控制寄存器清零(关DMA)  
+	SDIO_DMACmd(DISABLE);							//数据控制寄存器清零(关DMA)  
 	
 	if (p_cfg->cardinfo->cardtype == SDIO_HIGH_CAPACITY_SD_CARD)	//大容量卡
 	{
@@ -1494,12 +1498,15 @@ SD_Error hk_sd_read_multi_blocks(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr
 		}
 		else if (p_cfg->devicemode == SD_DMA_MODE)
 		{
-			hk_sd_dma_cfg((uint32_t*)buf, nblks * blksize, DMA_DIR_PeripheralSRC); 
+			// hk_sd_dma_cfg((uint32_t*)buf, nblks * blksize, DMA_DIR_PeripheralSRC); 
+			p_cfg->dma_obj->dma_ops.dma_init(&p_cfg->dma_obj->dma_cfg, &SDIO->FIFO, (uint32_t*)buf, 
+												blksize, DMA_DIR_PeripheralSRC);
+			p_cfg->dma_obj->dma_ops.dma_transfer_ctrl(&p_cfg->dma_obj->dma_cfg, ENABLE);
 			g_sdio_obj.sdio_cfg.transfererror 	= SD_OK;
 			g_sdio_obj.sdio_cfg.stopcondition 	= 1;				//多块读,需要发送停止传输指令 
 			g_sdio_obj.sdio_cfg.transferend	= 0;				//传输结束标置位，在中断服务置1
 			SDIO->MASK	|= (1<<1) | (1<<3) | (1<<8) | (1<<5) | (1<<9);	//配置需要的中断 
-		 	SDIO->DCTRL	|= 1<<3;		 								//SDIO DMA使能 
+		 	SDIO_DMACmd(ENABLE);		 								//SDIO DMA使能 
 			while (((DMA2->ISR & 0X2000) == RESET) && timeout)			//等待传输完成 
 			{
 				timeout--;
@@ -1537,7 +1544,7 @@ SD_Error hk_sd_write_block(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr, uint
 	} 
 
 	//数据控制寄存器清零(关DMA)   
-	SDIO->DCTRL=0x0;							
+	SDIO_DMACmd(DISABLE);							
 
 	//清除DPSM状态机配置
 	SDIO_DataInitStructure.SDIO_DataBlockSize	= 0;
@@ -1720,12 +1727,15 @@ SD_Error hk_sd_write_block(sdio_cfg_t *p_cfg, uint8_t *buf, long long addr, uint
 	}
 	else if (p_cfg->devicemode == SD_DMA_MODE)
 	{
-		hk_sd_dma_cfg((uint32_t*)buf, blksize, DMA_DIR_PeripheralDST);		//SDIO DMA配置
+		// hk_sd_dma_cfg((uint32_t*)buf, blksize, DMA_DIR_PeripheralDST);		//SDIO DMA配置
+		p_cfg->dma_obj->dma_ops.dma_init(&p_cfg->dma_obj->dma_cfg, &SDIO->FIFO, (uint32_t*)buf, 
+											blksize, DMA_DIR_PeripheralSRC);
+		p_cfg->dma_obj->dma_ops.dma_transfer_ctrl(&p_cfg->dma_obj->dma_cfg, ENABLE);
 		g_sdio_obj.sdio_cfg.transfererror 	= SD_OK;
 		g_sdio_obj.sdio_cfg.stopcondition 	= 0;					//单块写,不需要发送停止传输指令 
 		g_sdio_obj.sdio_cfg.transferend	= 0;					//传输结束标置位，在中断服务置1
 		SDIO->MASK |= (1<<1) | (1<<3) | (1<<8) | (1<<4) | (1<<9);	//配置产生数据接收完成中断
-		SDIO->DCTRL|=1<<3;								//SDIO DMA使能.  
+		SDIO_DMACmd(ENABLE);							//SDIO DMA使能.  
 
 		while (((DMA2->ISR & 0X2000) == RESET) && timeout)
 		{
@@ -1789,7 +1799,7 @@ SD_Error hk_sd_write_multi_blocks(sdio_cfg_t *p_cfg, uint8_t *buf, long long add
 		return SD_INVALID_PARAMETER; //参数错误  
 	}
 
-	SDIO->DCTRL=0x0;							//数据控制寄存器清零(关DMA)   
+	SDIO_DMACmd(DISABLE);							//数据控制寄存器清零(关DMA)   
 	
 	// 清除DPSM状态机配置
 	SDIO_DataInitStructure.SDIO_DataBlockSize	= 0;		
@@ -1992,12 +2002,15 @@ SD_Error hk_sd_write_multi_blocks(sdio_cfg_t *p_cfg, uint8_t *buf, long long add
 		}
 		else if (p_cfg->devicemode == SD_DMA_MODE)
 		{
-			hk_sd_dma_cfg((uint32_t*)buf, nblks*blksize, DMA_DIR_PeripheralDST);	//SDIO DMA配置
+			// hk_sd_dma_cfg((uint32_t*)buf, nblks*blksize, DMA_DIR_PeripheralDST);	//SDIO DMA配置
+			p_cfg->dma_obj->dma_ops.dma_init(&p_cfg->dma_obj->dma_cfg, &SDIO->FIFO, (uint32_t*)buf, 
+												blksize, DMA_DIR_PeripheralSRC);
+			p_cfg->dma_obj->dma_ops.dma_transfer_ctrl(&p_cfg->dma_obj->dma_cfg, ENABLE);
 			g_sdio_obj.sdio_cfg.transfererror 	= SD_OK;
 			g_sdio_obj.sdio_cfg.stopcondition 	= 1;					//多块写,需要发送停止传输指令 
 			g_sdio_obj.sdio_cfg.transferend	= 0;					//传输结束标置位，在中断服务置1
 			SDIO->MASK |= (1<<1) | (1<<3) | (1<<8) | (1<<4) | (1<<9);	//配置产生数据接收完成中断
-	 	 	SDIO->DCTRL |= 1<<3;										//SDIO DMA使能. 
+	 	 	SDIO_DMACmd(ENABLE);										//SDIO DMA使能. 
 			timeout = SDIO_DATATIMEOUT;
 
 			while (((DMA2->ISR & 0X2000) == RESET) && timeout)
