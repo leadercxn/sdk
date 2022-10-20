@@ -57,3 +57,9 @@ CSRCS += hk_usart.c
 DEPPATH += --dep-path $(SDK_DIR)/customized/hk_lib/f1/usart
 VPATH += :$(SDK_DIR)/customized/hk_lib/f1/usart
 IFLAGS += "-I$(SDK_DIR)/customized/hk_lib/f1/usart"
+
+# adc
+CSRCS += hk_adc.c
+DEPPATH += --dep-path $(SDK_DIR)/customized/hk_lib/f1/adc
+VPATH += :$(SDK_DIR)/customized/hk_lib/f1/adc
+IFLAGS += "-I$(SDK_DIR)/customized/hk_lib/f1/adc"

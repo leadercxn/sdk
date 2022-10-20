@@ -1,5 +1,5 @@
 CSRCS += misc.c
-# CSRCS += stm32f10x_adc.c
+CSRCS += stm32f10x_adc.c
 # CSRCS += stm32f10x_bkp.c
 # CSRCS += stm32f10x_can.c
 # CSRCS += stm32f10x_cec.c

@@ -31,12 +31,5 @@ typedef struct
     adc_ops_t adc_ops;
 } adc_object_t;
 
-int hk_adc1_init(adc_cfg_t *p_adc_cfg);
-
-int hk_adc1_enable(adc_cfg_t *p_adc_cfg);
-
-int hk_adc1_disable(adc_cfg_t *p_adc_cfg);
-
-int hk_adc_value_get(adc_cfg_t *p_adc_cfg, uint16_t *p_value);
 
 #endif
