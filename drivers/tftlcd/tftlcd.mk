@@ -25,3 +25,10 @@ VPATH += :$(SDK_DIR)/drivers/tftlcd/st7789
 
 IFLAGS += "-I$(SDK_DIR)/drivers/tftlcd/st7789"
 
+# ST7789
+CSRCS += ht1621.c
+
+DEPPATH += --dep-path $(SDK_DIR)/drivers/tftlcd/ht1621
+VPATH += :$(SDK_DIR)/drivers/tftlcd/ht1621
+
+IFLAGS += "-I$(SDK_DIR)/drivers/tftlcd/ht1621"
