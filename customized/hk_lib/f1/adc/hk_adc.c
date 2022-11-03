@@ -34,6 +34,15 @@ int hk_adc1_init(adc_cfg_t *p_adc_cfg)
     ADC_InitStructure.ADC_NbrOfChannel = p_hk_adc_cfg->adc_channel_num;
     ADC_Init(p_hk_adc_cfg->adc_type, &ADC_InitStructure);
 
+    if (p_hk_adc_cfg->adc_disc_enable == ENABLE)
+    {
+        p_hk_adc_cfg->adc_type->CR1 &= ~(0x7 << 13);
+        p_hk_adc_cfg->adc_type->CR1 &= ~(1 << 11);
+
+        p_hk_adc_cfg->adc_type->CR1 |= ((p_hk_adc_cfg->adc_disc_num) << 13);
+        p_hk_adc_cfg->adc_type->CR1 |= (1 << 11);
+    }
+
     for (uint8_t i = 0; i < p_hk_adc_cfg->adc_channel_num; i++)
     {
         ADC_RegularChannelConfig(p_hk_adc_cfg->adc_type, p_hk_adc_cfg->adc_chn_list[i], i+1, ADC_SampleTime_239Cycles5);
@@ -116,7 +125,7 @@ void ADC1_2_IRQHandler(void)
     
     if (ADC_GetITStatus(p_hk_adc_cfg->adc_type, ADC_IT_EOC) != RESET)
     {
-        trace_info("trigger.\r\n");
+        // trace_info("trigger.\r\n");
         g_adc_obj.adc_ops.adc_irq_cb(p_adc_cfg);
     }
 

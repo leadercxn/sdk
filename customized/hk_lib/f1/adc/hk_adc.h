@@ -21,10 +21,13 @@ typedef struct
     FunctionalState adc_continuous_mode;    // 单次触发/多次触发
     FunctionalState adc_dma_enable;         // dma开关
     FunctionalState adc_irq_enable;         // 中断相关配置
+    FunctionalState adc_disc_enable;        // 规则组间断模式开关
+    
     IRQn_Type       adc_irqn;
     uint8_t         adc_irq_pre_prio;
     uint8_t         adc_irq_sub_prio;
-
+    uint8_t         adc_disc_num;           // 间断组数目
+    
     uint8_t         adc_channel_num;        // 通道数
     uint32_t        adc_mode;               
     uint32_t        adc_trigger;            // 触发方式
@@ -51,6 +54,5 @@ int hk_adc_dma_ctrl(adc_cfg_t *p_adc_cfg, bool ctrl);
 
 void adc_handler(adc_cfg_t *p_adc_cfg);
 
-void ADCx_Init(void);
 
 #endif
