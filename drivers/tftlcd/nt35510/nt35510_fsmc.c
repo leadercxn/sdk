@@ -1,6 +1,7 @@
 #include "nt35510_fsmc.h"
-#include "fsmc.h"
+#include "hk_fsmc.h"
 #include "lib_error.h"
+#include "trace.h"
 
 int nt35510_hardware_init(tftlcd_driver_t *p_driver)
 {
@@ -17,17 +18,16 @@ int nt35510_hardware_init(tftlcd_driver_t *p_driver)
 
     // 3. handler GPIO
     p_drv_info->rst_pin.gpio_ops.gpio_output_set(&p_drv_info->rst_pin.gpio_cfg, 1);
-    p_drv_info->bl_pin.gpio_ops.gpio_output_set(&p_drv_info->bl_pin.gpio_cfg, 0);
 
     // 4. set lcd_addr
     // p_drv_info->base_addr = ((uint32_t)((FSMC_BASE_ADDR + BANK1_SECTOR1_OFFSET) | BANK_16B_A16_OFFSET));
     if (p_drv_info->buswidth == LCDBUSWIDTH_8B)
     {
-        p_drv_info->lcd_addr = ((lcdtype_8b_t *)(p_drv_info->lcd_addr));
+        p_drv_info->lcd_addr = ((lcdtype_8b_t *)(p_drv_info->base_addr));
     }
     else if (p_drv_info->buswidth == LCDBUSWIDTH_16B)
     {
-        p_drv_info->lcd_addr = ((lcdtype_16b_t *)(p_drv_info->lcd_addr));
+        p_drv_info->lcd_addr = ((lcdtype_16b_t *)(p_drv_info->base_addr));
     }
 
     return 0;
@@ -72,7 +72,7 @@ int nt35510_write_data(tftlcd_driver_t *p_driver, uint16_t data)
 int nt35510_read_data(tftlcd_driver_t *p_driver)
 {
     nt35510_fsmc_info_t *p_drv_info = (nt35510_fsmc_info_t *)p_driver->p_tft_cfg;
-    uint16_t data;
+    uint16_t data = 0;
 
     if (p_drv_info->buswidth == LCDBUSWIDTH_8B)
     {
@@ -110,7 +110,7 @@ int nt35510_write_reg(tftlcd_driver_t *p_driver, uint16_t cmd, uint16_t data)
 int nt35510_read_reg(tftlcd_cfg_t *p_cfg, uint16_t cmd)
 {
     nt35510_fsmc_info_t *p_drv_info = (nt35510_fsmc_info_t *)p_cfg->p_dri->p_tft_cfg;
-    uint16_t data;
+    uint16_t data = 0;
 
     if (p_drv_info->buswidth == LCDBUSWIDTH_8B)
     {
@@ -132,7 +132,7 @@ int nt35510_read_reg(tftlcd_cfg_t *p_cfg, uint16_t cmd)
 int nt35510_init(tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops)
 {
     tftlcd_driver_t *p_dri = p_cfg->p_dri;
-    // nt35510_fsmc_info_t *p_drv_info = (nt35510_fsmc_info_t *)p_dri->p_tft_cfg;
+    nt35510_fsmc_info_t *p_drv_info = (nt35510_fsmc_info_t *)p_dri->p_tft_cfg;
 
     // 1. hardware init
     p_cfg->hardware_init(p_dri);
@@ -146,7 +146,8 @@ int nt35510_init(tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops)
     p_dri->lcd_info.id = p_cfg->read_data(p_dri);     //读回0X80
     p_dri->lcd_info.id <<= 8;
     p_cfg->write_cmd(p_dri, 0XDC00);
-    p_dri->lcd_info.id = p_cfg->read_data(p_dri);    //读回0X00
+    p_dri->lcd_info.id |= p_cfg->read_data(p_dri);    //读回0X00
+
     if (p_dri->lcd_info.id == 0x8000)
     {
         p_dri->lcd_info.id = 0x5510;
@@ -571,9 +572,13 @@ int nt35510_init(tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops)
     p_cfg->write_cmd(p_dri, 0x2900);
 
     // 2.3 设置扫描方向、清屏
-    p_ops->set_scan_dir(p_cfg, 0);
+    p_ops->set_scan_dir(p_cfg, p_dri->lcd_info.dir);
     p_ops->clear_screen(p_cfg, p_ops);
 
+    // 3. 最后亮背光
+    p_drv_info->bl_pin.gpio_ops.gpio_output_set(&p_drv_info->bl_pin.gpio_cfg, 1);
+
+    trace_info("nt35510 init.\r\n");
     return 0;
 }
 
@@ -622,30 +627,128 @@ int nt35510_write_ram(tftlcd_cfg_t *p_cfg, uint16_t color)
     return 0;
 }
 
-
+// dir = 0 --> 竖屏
+// dir = 1 --> 横屏
 int nt35510_set_scan_dir(tftlcd_cfg_t *p_cfg, uint16_t dir)
 {
     tftlcd_driver_t *p_dri = p_cfg->p_dri;
     tftlcd_info_t   lcd_info = p_cfg->p_dri->lcd_info;
+    uint16_t regval = 0;
+
+    if (dir == 0)
+    {
+        regval |= (0<<7)|(0<<6)|(0<<5);     //从左到右,从上到下
+    }
+    else if (dir == 1)
+    {
+        regval |= (1<<7)|(0<<6)|(1<<5);     //从右到左,从上到下
+    }
 
     p_cfg->p_dri->lcd_info.dir = dir;
+    if (dir == 1)           // 横屏时需要对调
+    {
+        uint16_t tmp = p_cfg->p_dri->lcd_info.width;
+        p_cfg->p_dri->lcd_info.width = p_cfg->p_dri->lcd_info.height;
+        p_cfg->p_dri->lcd_info.height = tmp;
+    }
+    
+    p_cfg->write_reg(p_dri, 0x3600, regval);
     p_cfg->write_cmd(p_dri, lcd_info.setxcmd);
     p_cfg->write_data(p_dri, 0);
     p_cfg->write_cmd(p_dri, lcd_info.setxcmd+1);
     p_cfg->write_data(p_dri, 0);
     p_cfg->write_cmd(p_dri, lcd_info.setxcmd+2);
-    p_cfg->write_data(p_dri, ((lcd_info.width - 1) >> 8));
+    p_cfg->write_data(p_dri, ((p_cfg->p_dri->lcd_info.width - 1) >> 8));
     p_cfg->write_cmd(p_dri, lcd_info.setxcmd+3);
-    p_cfg->write_data(p_dri, ((lcd_info.width - 1) & 0xff));
+    p_cfg->write_data(p_dri, ((p_cfg->p_dri->lcd_info.width - 1) & 0xff));
 
     p_cfg->write_cmd(p_dri, lcd_info.setycmd);
     p_cfg->write_data(p_dri, 0);
     p_cfg->write_cmd(p_dri, lcd_info.setycmd+1);
     p_cfg->write_data(p_dri, 0);
     p_cfg->write_cmd(p_dri, lcd_info.setycmd+2);
-    p_cfg->write_data(p_dri, ((lcd_info.height - 1) >> 8));
+    p_cfg->write_data(p_dri, ((p_cfg->p_dri->lcd_info.height - 1) >> 8));
     p_cfg->write_cmd(p_dri, lcd_info.setycmd+3);
-    p_cfg->write_data(p_dri, ((lcd_info.height - 1) & 0xff));
+    p_cfg->write_data(p_dri, ((p_cfg->p_dri->lcd_info.height - 1) & 0xff));
 
     return 0;
 }
+
+int nt35510_fill_color(tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops, fill_object_t area, uint16_t *color)
+{
+    uint16_t width = area.coord_e.x - area.coord_s.x + 1;
+    uint16_t height = area.coord_e.y - area.coord_s.y + 1;
+
+#if 1
+    for (uint16_t y = 0; y < height; y++)
+    {
+        p_ops->set_cursor(p_cfg, area.coord_s.x, area.coord_s.y+y);
+        p_ops->write_ram_pre(p_cfg);
+
+        for (uint16_t x = 0; x < width; x++)
+        {
+            p_ops->write_ram(p_cfg, *color++);
+        }
+    }
+#else
+    // 通过DMA方式发送，需要在此处实现非单色块填充函数
+    uint16_t i = 0, j = 0;
+    uint32_t timeout = (uint32_t)0xFFFFFFFF;  
+    nt35510_fsmc_info_t *p_drv_info = (nt35510_fsmc_info_t *)p_cfg->p_dri->p_tft_cfg;
+    lcdtype_16b_t *p_lcd_addr = (lcdtype_16b_t *)p_drv_info->lcd_addr;
+
+	DMA_InitTypeDef DMA_InitStructure;
+
+	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);	//使能DMA2时钟
+
+	DMA_DeInit(DMA1_Channel1);   		//将DMA2的通道4寄存器重设为缺省值
+	DMA_Cmd(DMA1_Channel1, DISABLE ); 	//关闭DMA2 通道4
+
+	DMA_InitStructure.DMA_PeripheralBaseAddr 	= (uint32_t)color;  	//DMA外设基地址
+	DMA_InitStructure.DMA_MemoryBaseAddr 		= (uint32_t)p_lcd_addr->lcd_data;  	//DMA内存基地址
+	DMA_InitStructure.DMA_DIR 					= DMA_DIR_PeripheralSRC;  	//数据传输方向，从内存读取发送到外设
+	DMA_InitStructure.DMA_BufferSize 			= width;  			        //DMA通道的DMA缓存的大小
+	DMA_InitStructure.DMA_PeripheralInc 		= DMA_PeripheralInc_Enable;  	//外设地址寄存器递增
+	DMA_InitStructure.DMA_MemoryInc 			= DMA_MemoryInc_Disable;			//内存地址寄存器不变
+	DMA_InitStructure.DMA_PeripheralDataSize 	= DMA_PeripheralDataSize_HalfWord;  //数据宽度为16位
+	DMA_InitStructure.DMA_MemoryDataSize 		= DMA_MemoryDataSize_HalfWord; 		//数据宽度为16位
+	DMA_InitStructure.DMA_Mode 					= DMA_Mode_Normal;  			//工作在正常缓存模式
+	DMA_InitStructure.DMA_Priority 				= DMA_Priority_High; 			//DMA通道 x拥有高优先级 
+	DMA_InitStructure.DMA_M2M 					= DMA_M2M_Enable;  			//DMA通道x没有设置为内存到内存传输
+	DMA_Init(DMA1_Channel1, &DMA_InitStructure);    //根据DMA_InitStruct中指定的参数初始化DMA的通道USART1_Tx_DMA_Channel所标识的寄存器
+
+    trace_info("DMA transfer start...\r\n");
+    for (j = 0; j < height; j++)
+    {
+        p_ops->set_cursor(p_cfg, area.coord_s.x, area.coord_s.y+j);
+        p_ops->write_ram_pre(p_cfg);
+
+        // SDIO->MASK |= (1<<1) | (1<<3) | (1<<8) | (1<<4) | (1<<9);	//配置产生数据接收完成中断
+        // SDIO->DCTRL |= 1<<3;										//SDIO DMA使能. 
+        DMA_Cmd(DMA1_Channel1, ENABLE );                //开启DMA2 通道4
+
+        #if 0
+        while (((DMA1->ISR & 0X2000) == RESET) && timeout)			//等待传输完成 
+        {
+            timeout--;
+        }
+
+        if (timeout == 0)
+        {
+            trace_info("DMA transfer timeout...\r\n");
+        }
+        #else
+        while (DMA_GetFlagStatus(DMA1_FLAG_TC1) == RESET);
+        #endif
+        // p_cfg->delay_us(3);
+
+        DMA_Cmd(DMA1_Channel1, DISABLE );                //开启DMA2 通道4
+    }   
+    trace_info("DMA transfer end...\r\n");
+
+#endif
+
+    return 0;
+}
+
+

@@ -22,6 +22,7 @@ typedef struct
     uint32_t    gpio_pin;
     gpio_dir_e  gpio_dir;
     uint32_t    flag;
+    uint8_t     mode;
 } gpio_cfg_t;
 
 typedef struct
@@ -29,6 +30,8 @@ typedef struct
     int (* gpio_init)       (gpio_cfg_t *p_cfg);
     int (* gpio_output_set) (gpio_cfg_t *p_cfg, uint8_t value);
     int (* gpio_input_get)  (gpio_cfg_t *p_cfg, uint8_t *p_value);
+    int (* gpio_fix_input)  (gpio_cfg_t *p_cfg);
+    int (* gpio_fix_output) (gpio_cfg_t *p_cfg);
 } gpio_ops_t;
 
 

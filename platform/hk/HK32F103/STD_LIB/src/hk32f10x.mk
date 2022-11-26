@@ -1,0 +1,30 @@
+CSRCS += misc.c
+# CSRCS += stm32f10x_adc.c
+# CSRCS += stm32f10x_bkp.c
+# CSRCS += stm32f10x_can.c
+# CSRCS += stm32f10x_cec.c
+# CSRCS += stm32f10x_crc.c
+# CSRCS += stm32f10x_dac.c
+# CSRCS += stm32f10x_dbgmcu.c
+CSRCS += stm32f10x_dma.c
+CSRCS += stm32f10x_exti.c
+CSRCS += stm32f10x_flash.c
+CSRCS += stm32f10x_fsmc.c
+CSRCS += stm32f10x_gpio.c
+# CSRCS += stm32f10x_i2c.c
+# CSRCS += stm32f10x_iwdg.c
+# CSRCS += stm32f10x_pwr.c
+CSRCS += stm32f10x_rcc.c
+# CSRCS += stm32f10x_rtc.c
+CSRCS += stm32f10x_sdio.c
+# CSRCS += stm32f10x_spi.c
+CSRCS += stm32f10x_tim.c
+CSRCS += stm32f10x_usart.c
+# CSRCS += stm32f10x_wwdg.c
+
+DEPPATH += --dep-path $(SDK_DIR)/platform/hk/HK32F103/STD_LIB/src
+VPATH += :$(SDK_DIR)/platform/hk/HK32F103/STD_LIB/src
+
+IFLAGS += "-I$(SDK_DIR)/platform/hk/HK32F103/STD_LIB/inc"
+IFLAGS += "-I$(SDK_DIR)/platform/hk/HK32F103/CMSIS/CM3/DeviceSupport"
+IFLAGS += "-I$(SDK_DIR)/platform/hk/HK32F103/CMSIS/CM3/CoreSupport"

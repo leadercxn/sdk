@@ -11,6 +11,8 @@ typedef struct
     uint32_t flag;
 
     void *p_context;     //传递给中断处理函数的数据
+
+    void (* delay_ms)   (uint32_t ms);
 } exit_cfg_t;
 
 typedef struct
