@@ -170,6 +170,7 @@ typedef struct tftlcd_ops
     int (*write_ram)        (tftlcd_cfg_t *p_cfg, uint16_t color);
     int (*set_scan_dir)     (tftlcd_cfg_t *p_cfg, uint16_t dir);
     int (*read_reg)         (tftlcd_cfg_t *p_cfg, uint16_t cmd);
+    int (*read_point)       (tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops, uint16_t x, uint16_t y);
 
     // common function
     int (*clear_screen)     (tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops);

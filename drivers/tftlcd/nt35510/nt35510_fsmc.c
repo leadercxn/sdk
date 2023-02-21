@@ -751,4 +751,24 @@ int nt35510_fill_color(tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops, fill_objec
     return 0;
 }
 
+int nt35510_read_point(tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops, uint16_t x, uint16_t y)
+{
+    uint16_t r = 0, g = 0, b = 0;
+    tftlcd_driver_t *p_dri = p_cfg->p_dri;
+    tftlcd_info_t lcd_info = p_dri->lcd_info;
 
+	if (x >= lcd_info.width || y >= lcd_info.height) 
+    {
+        return 0;  
+    }
+
+    p_ops->set_cursor(p_cfg, x, y);
+    p_cfg->write_cmd(p_dri, 0x2E00);
+    r = p_cfg->read_data(p_dri);        // maybe need delay here
+    r = p_cfg->read_data(p_dri);
+    b = p_cfg->read_data(p_dri);
+    g = r & 0xFF;
+    g <<= 8;
+    
+    return (((r>>11)<<11)|((g>>10)<<5)|(b>>11));
+}

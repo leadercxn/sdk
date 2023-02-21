@@ -36,6 +36,7 @@ int nt35510_write_ram(tftlcd_cfg_t *p_cfg, uint16_t color);
 int nt35510_clear_screen(tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops);
 int nt35510_fill_area(tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops, fill_object_t area);
 int nt35510_fill_color(tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops, fill_object_t area, uint16_t *color);
+int nt35510_read_point(tftlcd_cfg_t *p_cfg, struct tftlcd_ops *p_ops, uint16_t x, uint16_t y);
 
 #endif
 
