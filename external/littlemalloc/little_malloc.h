@@ -11,7 +11,8 @@
 #define SRAMIN	 0		//内部内存池
 #define SRAMEX   1		//外部内存池 
 
-#define SRAMBANK 	2	//定义支持的SRAM块数.	
+// TODO: 此处只支持一个sram
+#define SRAMBANK 	1	//定义支持的SRAM块数.	
 
 // mem1内存参数设定.mem1完全处于内部SRAM里面.
 #define MEM1_BLOCK_SIZE			32  	  							//内存块大小为32字节
