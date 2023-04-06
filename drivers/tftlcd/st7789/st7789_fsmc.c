@@ -1,4 +1,5 @@
 #include "st7789_fsmc.h"
+#include "hk_fsmc.h"
 
 // basic function
 int st7789_hw_fsmc_init(tftlcd_driver_t *p_driver)
@@ -68,7 +69,7 @@ int st7789_write_data_fsmc(tftlcd_driver_t *p_driver, uint16_t data)
 int st7789_read_data_fsmc(tftlcd_driver_t *p_driver)
 {
     st7789_fsmc_info_t *p_drv_info = (st7789_fsmc_info_t *)p_driver->p_tft_cfg;
-    uint16_t data;
+    uint16_t data = 0;
 
     if (p_drv_info->buswidth == LCDBUSWIDTH_8B)
     {
@@ -107,7 +108,7 @@ int st7789_write_reg_fsmc(tftlcd_driver_t *p_driver, uint16_t cmd, uint16_t data
 int st7789_read_reg(tftlcd_cfg_t *p_cfg, uint16_t cmd)
 {
     st7789_fsmc_info_t *p_drv_info = (st7789_fsmc_info_t *)p_cfg->p_dri->p_tft_cfg;
-    uint16_t data;
+    uint16_t data = 0;
 
     if (p_drv_info->buswidth == LCDBUSWIDTH_8B)
     {

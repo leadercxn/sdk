@@ -223,7 +223,7 @@ uint8_t ai_load_picfile(const uint8_t *filename, uint16_t x, uint16_t y, uint16_
 
 	if (pic_phy.fillcolor == NULL)			//颜色填充函数未实现,不能快速显示
 	{
-		fast=0;
+		fast = 0;
 	}
 
 	//显示的开始坐标点
@@ -240,10 +240,10 @@ uint8_t ai_load_picfile(const uint8_t *filename, uint16_t x, uint16_t y, uint16_
 			break;
 		case T_JPG:
 		case T_JPEG:
-			// res = jpg_decode(filename, fast);	//解码JPG/JPEG	  	  
+			res = jpg_decode(filename, fast);	//解码JPG/JPEG	  	  
 			break;
 		case T_GIF:
-			// res = gif_decode(filename, x, y, width, height);	//解码gif  	  
+			res = gif_decode(filename, x, y, width, height);	//解码gif  	  
 			break;
 		default:
 	 		res = PIC_FORMAT_ERR;  						//非图片格式!!!  

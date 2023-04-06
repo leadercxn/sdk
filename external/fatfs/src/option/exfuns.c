@@ -1,8 +1,6 @@
 #include "string.h"
 #include "exfuns.h"
-// #include "fattester.h"	
 #include "little_malloc.h"
-// #include "usart.h"
 
 
 #define FILE_MAX_TYPE_NUM		6			//最多FILE_MAX_TYPE_NUM个大类
@@ -43,10 +41,10 @@ uint8_t exfuns_init(void)
 		}
 	}
 
-	file = (FIL*)little_mem_malloc(SRAMIN, sizeof(FIL));			//为file申请内存
+	file = (FIL*)little_mem_malloc(SRAMIN, sizeof(FIL));		//为file申请内存
 	ftemp = (FIL*)little_mem_malloc(SRAMIN, sizeof(FIL));		//为ftemp申请内存
 	fatbuf = (uint8_t*)little_mem_malloc(SRAMIN, 512);			//为fatbuf申请内存
-	if (i == _VOLUMES && file && ftemp && fatbuf)		//申请有一个失败,即失败.
+	if (i == _VOLUMES && file && ftemp && fatbuf)				//申请有一个失败,即失败.
 	{
 		return 0;  
 	}

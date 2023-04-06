@@ -5,8 +5,8 @@
 #include "ff.h"
 #include "exfuns.h"
 #include "bmp.h"
-// #include "tjpgd.h"
-// #include "gif.h"
+#include "tjpgd.h"
+#include "gif.h"
 
 #include "tftlcd.h"
 
