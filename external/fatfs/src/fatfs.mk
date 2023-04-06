@@ -2,7 +2,10 @@ CSRCS += diskio.c
 CSRCS += ff.c
 
 CSRCS += cc936.c
+
+ifndef LVGL_ENABLE
 CSRCS += exfuns.c
+endif
 
 DEPPATH += --dep-path $(SDK_DIR)/external/fatfs/src
 VPATH += :$(SDK_DIR)/external/fatfs/src

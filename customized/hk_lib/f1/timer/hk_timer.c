@@ -6,7 +6,9 @@
 #include "util.h"
 #include "hk_timer.h"
 
+#ifdef LVGL_ENABLE
 #include "lv_hal_tick.h"
+#endif
 
 /**
  * @brief 
@@ -91,7 +93,9 @@ void TIM3_IRQHandler(void)
         g_timer3_object.timer_cfg.ticks++;
 
         /* lvgl心跳节拍 */
+#ifdef LVGL_ENABLE
         lv_tick_inc(1);
+#endif
 
         /* 中断回调函数 */
         g_timer3_object.timer_ops.timer_irq_cb(&g_timer3_object.timer_cfg);
