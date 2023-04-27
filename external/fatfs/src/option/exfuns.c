@@ -21,7 +21,7 @@ uint8_t* FILE_TYPE_TBL[FILE_MAX_TYPE_NUM][FILE_MAX_SUBT_NUM] =
 FATFS *fs[_VOLUMES];		//逻辑磁盘工作区.	 
 FIL *file;	  				//文件1
 FIL *ftemp;	  				//文件2.
-UINT br,bw;					//读写变量
+UINT br, bw;					//读写变量
 FILINFO fileinfo;			//文件信息
 DIR dir;  					//目录
 uint8_t *fatbuf;			//SD卡数据缓存区
