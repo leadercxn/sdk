@@ -112,6 +112,9 @@ int hk_uart_obj_init(usart_cfg_t *p_uart_cfg)
     return 0;
 }
 
+/**
+ * 这里做得不好，用了全局变量 g_usart_object , 应该传入 usart_obj 对象
+ */
 void hk_uart_obj_put(uint8_t ch)
 {
     hk_uart_put(*(hk_uart_info_t *)g_usart_object.usart_cfg.p_pin_cfg, ch);

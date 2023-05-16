@@ -23,6 +23,7 @@ typedef struct
     uint16_t    (* usart_read_buffer)  (uint8_t *ch, uint16_t len);
     void        (* usart_put_string)   (const char *ch);                              // 专用ntshell输出string的接口
 #endif
+
 } usart_ops_t;
 
 

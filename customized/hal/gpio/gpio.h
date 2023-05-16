@@ -41,6 +41,8 @@ typedef struct
     gpio_ops_t gpio_ops;
 } gpio_object_t;
 
+__weak int gpio_init(gpio_cfg_t *p_cfg);
+
 
 
 #endif

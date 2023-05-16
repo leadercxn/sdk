@@ -5,6 +5,11 @@
 
 #include "usart.h"
 #include "trace.h"
+/**
+ * 
+ * @brief 使用此文件必须先提前定义好用做打印串口的 g_usart_object
+ */
+
 
 /**
  * @brief Definition for COM port1, connected to USART2
